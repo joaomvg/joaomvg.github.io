@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Linear Discriminant Analysis | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Linear Discriminant Analysis" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Linear discriminant analysis is an algorithm whereby one fits the data using a Gaussian classifier. LDA can also be used to perform a dimensional reduction of the data. We explain the theory, the dimensionality reduction, as well as a Python implementation from scratch." />
+<meta property="og:description" content="Linear discriminant analysis is an algorithm whereby one fits the data using a Gaussian classifier. LDA can also be used to perform a dimensional reduction of the data. We explain the theory, the dimensionality reduction, as well as a Python implementation from scratch." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/08/20/lda.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/08/20/lda.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/lda_projection.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-08-20T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/lda_projection.png" />
+<meta property="twitter:title" content="Linear Discriminant Analysis" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/08/20/lda.html","image":"http://localhost:4000/lda_projection.png","headline":"Linear Discriminant Analysis","dateModified":"2020-08-20T00:00:00+02:00","datePublished":"2020-08-20T00:00:00+02:00","description":"Linear discriminant analysis is an algorithm whereby one fits the data using a Gaussian classifier. LDA can also be used to perform a dimensional reduction of the data. We explain the theory, the dimensionality reduction, as well as a Python implementation from scratch.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/08/20/lda.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Linear Discriminant Analysis</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-08-20T00:00:00+02:00" itemprop="datePublished">
+        Aug 20, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#1-lda"><strong>1. LDA</strong></a></li>
+  <li><a href="#2-decision-boundary"><strong>2. Decision Boundary</strong></a></li>
+  <li><a href="#3-dimensionality-reduction"><strong>3. Dimensionality Reduction</strong></a></li>
+  <li><a href="#4-quadratic-discriminant-analysis"><strong>4. Quadratic Discriminant Analysis</strong></a></li>
+  <li><a href="#5-python-implementation"><strong>5. Python Implementation</strong></a></li>
+</ul>
+
+<p><a name="def1"></a></p>
+<h3 id="1-lda"><strong>1. LDA</strong></h3>
+<p>The LDA or linear discriminant analysis is an algorithm whereby the probability has the following form</p>
+
+\[p(x|c)=\frac{1}{\sqrt{(2\pi)^d\text{det}(\Sigma)}}e^{-\frac{1}{2}(x-\mu_c)^t\Sigma^{-1}(x-\mu_c)}\]
+
+<p>where $c$ is the class and $p(c)=\pi_c$.
+Using Bayes theorem we calculate</p>
+
+\[p(c|x)=\frac{p(x|c)\pi_c}{\sum_k p(x|k)\pi_k}=\frac{e^{-\frac{1}{2}(x-\mu_c)^t\Sigma^{-1}(x-\mu_c)}\pi_c}{\sum_k e^{-\frac{1}{2}(x-\mu_k)^t\Sigma^{-1}(x-\mu_k)}\pi_k}=\frac{e^{-\mu_c^t\Sigma^{-1}x-\frac{1}{2}\mu_c^t\Sigma^{-1}\mu_c }\pi_c}{\sum_ke^{-\mu_k^t\Sigma^{-1}x-\frac{1}{2}\mu_k^t\Sigma^{-1}\mu_k }\pi_k}\]
+
+<p>Note that this has precisely the form of the logistic regression probability. We can conclude right away that the predicted classes form simply connected convex sets. However, to train the LDA algorithm we use instead the probability 
+\(p(x,c)\) 
+rather than $p(c|x)$ as in the logistic case. We proceed as usual by minimizing the log loss function</p>
+
+\[\begin{equation*}\begin{split}\mathcal{L}&amp;=-\sum_i \ln p(x_i,c_i)\\
+&amp;=-\sum_i \ln(\pi_{c_i}) +\sum_i \frac{1}{2}(x_i-\mu_{c_i})^t\Sigma^{-1}(x_i-\mu_{c_i})+\frac{N}{2}\ln\text{det}(\Sigma)+\frac{Nd}{2}\ln(2\pi)\end{split}\end{equation*}\]
+
+<p>Using the property</p>
+
+\[\frac{\partial}{\partial \Sigma^{-1}_{ij}}\ln\text{det}\Sigma=-\Sigma_{ij}\]
+
+<p>we calculate</p>
+
+\[\frac{\partial}{\partial \Sigma^{-1}_{ij}}\mathcal{L}=0\iff \Sigma_{ij}=\frac{1}{N}\sum_k(x_k-\mu_{c_k})_i(x_k-\mu_{c_k})_j\]
+
+<p>While the other parameters are calculated as</p>
+
+\[\frac{\partial}{\partial \mu_c}\mathcal{L}=0\iff \frac{1}{N_c}\sum_{k: y=c} x_k\]
+
+<p>where the sum is over the $N_c$ datapoints with class $c$, and</p>
+
+\[\frac{\partial}{\partial \pi_c}\mathcal{L}=0\iff \pi_c=\frac{N_c}{N}\]
+
+<p><a name="decision"></a></p>
+<h3 id="2-decision-boundary"><strong>2. Decision Boundary</strong></h3>
+
+<p>The predictor is determined by the maximum of 
+\(p(c|x)\)
+. As we have seen above, this probability has the same form as the logistic regression. This means that also, for LDA, the regions of the predicted class are singly connected convex sets.</p>
+
+<p><a name="dimension"></a></p>
+<h3 id="3-dimensionality-reduction"><strong>3. Dimensionality Reduction</strong></h3>
+
+<p>The PCA, or principal component analysis, is an algorithm that reduces the dimensionality of the dataset while keeping the most relevant features. However, the PCA analysis does not discriminate over the classes, which may lead to a lack of predictability in supervised learning problems. The right projection keeps the classes separated in the example below, which is a better projection than the one on the left.</p>
+
+<div style="text-align: center"><img src="/images/lda_projection.png" width="70%" /></div>
+
+<p>Besides being a Gaussian classifier, the LDA can be used to reduce the data dimensionally. The basic idea is to find a projection axis that maximizes the “between” class variance while, at the same time, minimizes the “within” class variance. That is, we make the gaussians more narrow, and at the same time, the centers become farther apart from each other.  <br />
+Consider the covariance matrix given by</p>
+
+\[\Sigma_{ij}=\frac{1}{N}\sum_x (x_i-\bar{x}_i)(x_j-\bar{x}_j)\]
+
+<p>We can write this as</p>
+
+\[\begin{equation*}\begin{split}\sum_x (x_i-\bar{x}_i)(x_j-\bar{x}_j)&amp;=\sum_c\sum_{x\in \text{class }c} (x_i-\bar{x}_i)(x_j-\bar{x}_j)\\
+&amp;=\sum_c\sum_{x\in \text{class }c}(x_i-\bar{x}^c_i)(x_j-\bar{x}^c_j)+\sum_c N_c(\bar{x}^c_i-\bar{x}_i)(\bar{x}^c_j-\bar{x}_j)\end{split}\end{equation*}\]
+
+<p>where $\bar{x}^c$ is the average of $x$ within class $c$ and $N_c$ is the number of points in class $c$. The first term above is known as “within” class covariance, which we denote as $\textbf{W}$, and the second term as “between” class covariance, denoted as $\textbf{B}$. We want to maximize the quotient</p>
+
+\[\text{max}_v\frac{v^T\textbf{B}v}{v^T\textbf{W}v}\]
+
+<p>For that purpose we consider the eigenvalues $\lambda$ and eigenvectores $v_{\lambda}$ of $\textbf{W}^{-1}\textbf{B}$. The quotient becomes</p>
+
+\[\frac{v_{\lambda}^T\textbf{W}\textbf{W}^{-1}\textbf{B}v_{\lambda}}{v_{\lambda}^T\textbf{W}v_{\lambda}}=\lambda\]
+
+<p>It is easy to show that the stationary directions of the quotient correspond to the eigen-directions. Hence the direction of best projection is along the eigenvector with largest eingenvalue.</p>
+
+<p><a name="quadratic"></a></p>
+<h3 id="4-quadratic-discriminant-analysis"><strong>4. Quadratic Discriminant Analysis</strong></h3>
+
+<p>In QDA or quadratic discriminant analysis the covariance matrix is not necessarily constant across the various classes, instead we have</p>
+
+\[p(x|c)=\frac{1}{\sqrt{(2\pi)^d\text{det}(\Sigma_c)}}e^{-\frac{1}{2}(x-\mu_c)^t\Sigma_c^{-1}(x-\mu_c)}\]
+
+<p>This means that the likelihood 
+$p(c|x)$ 
+now depends on the covariance matrix, that is,</p>
+
+\[p(c|x)=\frac{p(x|c)\pi_c}{\sum_k p(x|k)\pi_k}=\frac{1}{\sqrt{(2\pi)^d\text{det}(\Sigma_c)}}\frac{e^{-\frac{1}{2}(x-\mu_c)^t\Sigma_c^{-1}(x-\mu_c)}\pi_c}{\sum_k p(x|k)\pi_k}\]
+
+<p><a name="python"></a></p>
+<h3 id="5-python-implementation"><strong>5. Python Implementation</strong></h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LDAmodel</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">mu</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">prior_prob</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mu</span><span class="o">=</span><span class="n">mu</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">prior_prob</span><span class="o">=</span><span class="n">prior_prob</span>
+        <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">inv</span><span class="o">=</span><span class="bp">None</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">det</span><span class="o">=</span><span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">inv</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">inv</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">det</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">det</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mu</span><span class="o">==</span><span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="o">=</span><span class="bp">None</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">dim</span><span class="o">=</span><span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="o">=</span><span class="n">mu</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">dim</span><span class="o">=</span><span class="n">mu</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">coef_</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">intercept_</span><span class="o">=</span><span class="bp">None</span>
+        
+    <span class="k">def</span> <span class="nf">means</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">yset</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">means</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">yset</span><span class="p">),</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">yset</span><span class="p">:</span>
+            <span class="n">means</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">y</span><span class="o">==</span><span class="n">i</span><span class="p">].</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">means</span>
+    
+    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">yset</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">var</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+        <span class="n">means</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">means</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">yset</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">y</span><span class="o">==</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">means</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">var</span><span class="o">+=</span><span class="n">np</span><span class="p">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">var</span><span class="o">=</span><span class="n">var</span><span class="o">/</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">var</span>
+    
+    <span class="k">def</span> <span class="nf">priors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">priors</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">yset</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">yset</span><span class="p">:</span>
+            <span class="n">priors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">y</span><span class="o">==</span><span class="n">i</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span><span class="o">/</span><span class="n">y</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">priors</span>
+    
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">means</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">prior_prob</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">priors</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">inv</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">det</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">det</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dim</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">coef_</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mu</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">inv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">intercept_</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="p">):</span>
+            <span class="n">v</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">inv</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">intercept_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">v</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">probs</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="p">):</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">x</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">w</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">inv</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">=</span><span class="p">(</span><span class="n">t</span><span class="o">*</span><span class="n">w</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">probs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">priors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">probs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">probs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">dim</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">det</span><span class="p">)))</span>
+        <span class="n">Z</span><span class="o">=</span><span class="n">probs</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">probs</span><span class="o">/</span><span class="n">Z</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/machine%20learning/2020/08/20/lda.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

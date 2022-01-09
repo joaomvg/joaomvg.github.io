@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Gradient Boosting | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Gradient Boosting" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Gradient boosting is another boosting algorithm. It uses gradient descent to minimize the loss function and hence the name. However, unlike in other algorithms, the learning rate is adjusted at every step." />
+<meta property="og:description" content="Gradient boosting is another boosting algorithm. It uses gradient descent to minimize the loss function and hence the name. However, unlike in other algorithms, the learning rate is adjusted at every step." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/10/13/gradboosting.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/10/13/gradboosting.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/gradboost_30.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-10-13T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/gradboost_30.png" />
+<meta property="twitter:title" content="Gradient Boosting" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/10/13/gradboosting.html","image":"http://localhost:4000/gradboost_30.png","headline":"Gradient Boosting","dateModified":"2020-10-13T00:00:00+02:00","datePublished":"2020-10-13T00:00:00+02:00","description":"Gradient boosting is another boosting algorithm. It uses gradient descent to minimize the loss function and hence the name. However, unlike in other algorithms, the learning rate is adjusted at every step.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/10/13/gradboosting.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Gradient Boosting</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-10-13T00:00:00+02:00" itemprop="datePublished">
+        Oct 13, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#1-gradient-boosting"><strong>1. Gradient boosting</strong></a></li>
+  <li><a href="#2-decision-boundary"><strong>2. Decision Boundary</strong></a></li>
+  <li><a href="#3-python-implementation"><strong>3. Python implementation</strong></a></li>
+</ul>
+
+<p><a name="def1"></a></p>
+<h3 id="1-gradient-boosting"><strong>1. Gradient boosting</strong></h3>
+<p>In gradient boosting, much like in adaboost, we fit a sequence of weak learners in an iterative manner. In this way, the predictor at the mth-step is given as a sum of the predictors from previoues iterations, that is,</p>
+
+\[F_m(x)=\gamma_0+\gamma_1 w_1(x)+\ldots+\gamma_m w_m(x)\]
+
+<p>where $w_i(x)$ is the weak-learner predictor and $\gamma_0$ is a constant.</p>
+
+<p>To motivate the gradient we consider the Taylor approximation of the loss function around $F_{m-1}$, that is,</p>
+
+\[L(F_m)=L(F_{m-1})+\frac{\partial L}{\partial F}\Bigr|_{F_{m-1}}(F_m-F_{m-1})+\ldots\]
+
+<p>In the gradient descent algorithm we take a step of magnitude proportional to</p>
+
+\[F_m-F_{m-1}\propto-\frac{\partial L}{\partial F_{m-1}}\]
+
+<p>The constant of proportionality is the learning rate. Since</p>
+
+\[F_m-F_{m-1}\propto w(x)\]
+
+<p>the best we can do is to fit $w(x)$ to the gradient descent direction, that is,</p>
+
+\[w(x)\sim -\frac{\partial L}{\partial F_{m-1}}\]
+
+<p>where $\sim$ means that we fit the learner. In order to fix $\gamma_m$, effectively the learning rate, we solve the one-dimensional optimization problem</p>
+
+\[\gamma_m=\text{argmin}_{\gamma_m} L(y,F_{m-1}+\gamma_m w(x))\]
+
+<p>where $y$ is the target array. We repeat this process until the solution is sufficiently accurate.</p>
+
+<p>To exemplify how this works in practice, consider a binary classification problem. In this case, we use the logit function using the boosting algorithm. In other words, we assume that the likelihood \(p(y=0|x)\) 
+has the form</p>
+
+\[p(y=0|x)=\frac{1}{1+e^{-F_m(x)}}\]
+
+<p>with $F_m(x)$ given as above. The loss $L$ is the the log-loss function. The gradient descent direction is given by the variational derivative, that is,</p>
+
+\[r^i\equiv-\frac{\partial L}{\partial F_{m-1}}\Bigr|_{x^i}=\frac{e^{-F_{m-1}(x^i)}}{1+e^{-F_{m-1}(x^i)}}-y^i\]
+
+<p>and we fit $w_m(x)$ to $r^i$. Then we are left with the minimization problem</p>
+
+\[\text{argmin}_{\gamma_m} \sum_{y^i=0}\ln\Big( 1+e^{-F_{m-1}(x^i)-\gamma_m w_m(x^i)}\Big) -\sum_{y^i=1}\ln \Big(\frac{e^{-F_{m-1}(x^i)-\gamma_m w(x^i)}}{1+e^{-F_{m-1}(x^i)-\gamma_m w(x^i)}}\Big)\]
+
+<p>which determines the learning rate, that is, $\gamma_m$. This is a convex optimization problem and can be solved using the Newton-Raphson method.</p>
+
+<p><a name="decision"></a></p>
+<h3 id="2-decision-boundary"><strong>2. Decision Boundary</strong></h3>
+
+<p>We fit an GradBoost classifier to a dataset consisting of two sets of points, red and blue, which are normally distributed. Below is the Gradient boosting prediction after six steps.</p>
+<div style="text-align: center"><img src="/images/gradboost_6.png" width="70%" /></div>
+
+<p>And below we present the prediction at each step of training, from left to right</p>
+<div style="text-align: center"><img src="/images/gradboost_seq.png" width="100%" /></div>
+
+<p>One can see that the algorithm is trying to overfit the data by drawing a more complex decision boundary at each step. If we let the algorithm run with 30 estimators the decision boundary becomes very complex</p>
+<div style="text-align: center"><img src="/images/gradboost_30.png" width="70%" /></div>
+
+<p><a name="python"></a></p>
+<h3 id="3-python-implementation"><strong>3. Python implementation</strong></h3>
+
+<p>The class node encapsulates the data structure that we will use to store fitted models.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">class</span> <span class="nc">node</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tree</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">gamma</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">tree</span><span class="o">=</span><span class="n">tree</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span>
+        <span class="bp">self</span><span class="p">.</span><span class="nb">next</span><span class="o">=</span><span class="bp">None</span>
+    
+    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tree</span><span class="p">,</span><span class="n">gamma</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="nb">next</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="nb">next</span><span class="o">=</span><span class="n">node</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="nb">next</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span><span class="n">gamma</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">tree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">tree</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="nb">next</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">gamma</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">gamma</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="nb">next</span><span class="p">.</span><span class="n">output</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+<p>The GradBoostClassifier class implements the boosting algorithm. We use the Newton-Raphson method to determine $\gamma$ at each step in the iteration.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GradBoostClassifier</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n_iter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_iter</span><span class="o">=</span><span class="n">n_iter</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gamma0</span><span class="o">=</span><span class="bp">None</span>
+    
+    <span class="k">def</span> <span class="nf">__sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">prob</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">prob</span>
+    
+    <span class="k">def</span> <span class="nf">__minima</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">g</span><span class="o">=</span><span class="mf">0.1</span>
+        <span class="n">g_prev</span><span class="o">=</span><span class="mf">0.1</span>
+        <span class="n">cl</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">not_converged</span><span class="o">=</span><span class="bp">True</span>
+        <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">while</span> <span class="n">not_converged</span><span class="p">:</span>
+            <span class="n">prob</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__sigmoid</span><span class="p">(</span><span class="n">F</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">grad_dd</span><span class="o">=</span><span class="n">h</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">p</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">grad_dd</span><span class="o">=</span><span class="n">grad_dd</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+            <span class="n">grad_d</span><span class="o">=</span><span class="n">h</span><span class="o">*</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">grad_d</span><span class="o">=</span><span class="n">grad_d</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+            
+            <span class="n">delta</span><span class="o">=-</span><span class="n">grad_d</span><span class="o">/</span><span class="n">grad_dd</span>
+            <span class="n">g</span><span class="o">+=</span><span class="n">delta</span>
+            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">g_prev</span><span class="o">-</span><span class="n">g</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">0.01</span><span class="p">:</span>
+                <span class="n">not_converged</span><span class="o">=</span><span class="bp">False</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">10000</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">g_prev</span><span class="o">=</span><span class="n">g</span>
+
+        <span class="k">return</span> <span class="n">g</span>
+    
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="o">=</span><span class="n">node</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">class_dic</span><span class="o">=</span><span class="p">{</span><span class="n">c</span><span class="p">:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="p">)}</span>
+        <span class="n">cl</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">yc</span><span class="o">=</span><span class="n">y</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">yc</span><span class="p">[</span><span class="n">y</span><span class="o">==</span><span class="n">cl</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">yc</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="n">cl</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">n1</span><span class="o">=</span><span class="p">(</span><span class="n">yc</span><span class="o">==</span><span class="mi">1</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">n0</span><span class="o">=</span><span class="p">(</span><span class="n">yc</span><span class="o">==</span><span class="mi">0</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gamma0</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">n1</span><span class="o">/</span><span class="n">n0</span><span class="p">)</span>
+        
+        <span class="c1">#1st STEP
+</span>        <span class="n">F</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">gamma0</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">n1</span><span class="o">/</span><span class="p">(</span><span class="n">n1</span><span class="o">+</span><span class="n">n0</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">res</span><span class="o">=-</span><span class="n">p</span><span class="o">+</span><span class="n">yc</span>
+        <span class="n">tree</span><span class="o">=</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">tree</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">=</span><span class="n">tree</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">gamma</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__minima</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">yc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">tree</span><span class="o">=</span><span class="n">tree</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="n">F</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">gamma0</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">output</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__sigmoid</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">=-</span><span class="n">p</span><span class="o">+</span><span class="n">yc</span>
+            <span class="n">tree</span><span class="o">=</span><span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">tree</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">res</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">=</span><span class="n">tree</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">gamma</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__minima</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">yc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span><span class="n">gamma</span><span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">gamma0</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">output</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__sigmoid</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">ycl</span><span class="o">=</span><span class="p">(</span><span class="n">p</span><span class="o">&gt;=</span><span class="mf">0.5</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">ypred</span><span class="o">=</span><span class="n">ycl</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">ypred</span><span class="p">[</span><span class="n">ycl</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ypred</span><span class="p">[</span><span class="n">ycl</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">ypred</span> 
+    
+    <span class="k">def</span> <span class="nf">predict_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">gamma0</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">output</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__sigmoid</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">p</span>
+
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/machine%20learning/2020/10/13/gradboosting.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

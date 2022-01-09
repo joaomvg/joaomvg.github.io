@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Stochastic Gradient Descent | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Stochastic Gradient Descent" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Stochastic gradient descent is an algorithm for online-optimization. Its purpose is to estimate the optimal parameters of the learning hypotheses. Unlike gradient descent, the iterative process requires only a small amount of data at a time, which is very useful for large datasets." />
+<meta property="og:description" content="Stochastic gradient descent is an algorithm for online-optimization. Its purpose is to estimate the optimal parameters of the learning hypotheses. Unlike gradient descent, the iterative process requires only a small amount of data at a time, which is very useful for large datasets." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/12/01/sgd.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/12/01/sgd.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/grad_descent.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-12-01T00:00:00+01:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/grad_descent.png" />
+<meta property="twitter:title" content="Stochastic Gradient Descent" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/12/01/sgd.html","image":"http://localhost:4000/grad_descent.png","headline":"Stochastic Gradient Descent","dateModified":"2020-12-01T00:00:00+01:00","datePublished":"2020-12-01T00:00:00+01:00","description":"Stochastic gradient descent is an algorithm for online-optimization. Its purpose is to estimate the optimal parameters of the learning hypotheses. Unlike gradient descent, the iterative process requires only a small amount of data at a time, which is very useful for large datasets.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/12/01/sgd.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Stochastic Gradient Descent</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-12-01T00:00:00+01:00" itemprop="datePublished">
+        Dec 1, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ol>
+  <li><a href="#sgd">SGD</a></li>
+  <li><a href="#var">Variants</a></li>
+</ol>
+
+<p><a name="sgd"></a></p>
+<h3 id="1-sgd"><strong>1. SGD</strong></h3>
+
+<p>Gradient descent is an algorithm for solving optimization problems. It uses the gradients of the function we want to optimize to search for a solution. The concept is straightforward. Suppose we want to minimize a loss function. We start by choosing a random point in the loss function surface. Then we make a step proportional to the function’s gradient at that point but in the opposite direction. This guarantees if the step is sufficiently small that the new point has a smaller loss value. We continue this process until the gradient is zero or smaller than a predefined threshold.</p>
+
+<p>The loss is usually a multivariate function in a high dimensional space, that is, $L=L(x)$ with $x\in\mathbb{R}^d$. The gradient descent ensures that we always take steps in a direction orthogonal to constant loss value surfaces. That is, consider the region that has a loss value $L=L_1$. A small step $dx$ along this surface does not change the loss value. Therefore we must have</p>
+
+<p>\(\frac{\partial L}{\partial x_1}dx_1+\frac{\partial L}{\partial x_2}dx_2+\ldots+\frac{\partial L}{\partial x_d}dx_d=\frac{\partial L}{\partial x}\cdot dx=0\)
+and so the gradient vector $\partial L /\partial x$ is an orthogonal vector to the surface $L=L_1$.
+In other words, a gradient step moves the parameter away from surfaces of constant loss.</p>
+
+<div style="text-align: center"><img src="/images/grad_descent.png" width="50%" /></div>
+
+<p>In practice, we perform the update
+\(w_t=w_{t-1}-\eta \frac{\partial L}{\partial w_{t-1}}\)
+where $w$ is the parameter to be learned and $\eta$ is the learning rate. Usually, we need to adapt the learning rate during the descent. A large learning rate may lead to non-convergent results. On the other hand, a small learning rate will make the convergence very slow.</p>
+
+<p>One of the most important shortcomings of the gradient descent is that it may get stuck in a local minimum. To add to this, calculating the gradient at every step may be computationally very expensive. For example, in neural networks, the computational cost is at least of order $\mathcal{O}(Nm)$, where $N$ is the number of datapoints and $m$ the number of parameters. For large neural networks with millions of parameters, calculating the gradient at each step is infeasible. To solve these issues, instead of calculating the loss overall all datapoints, we can consider small batches at each step. We calculate the contribution to the gradient from the smaller batch
+\(\frac{\partial L^{B}}{\partial w}=\sum_{i\in\text{Batch}}\frac{\partial L_i}{\partial w}\) <br />
+where $L_i$ is the loss contribution from a single datapoint, and use this to update the parameters iteratively.</p>
+
+<p>In stochastic gradient descent, we update the parameters using small-batch gradient descent. We run through all small-batches to guarantee that we learn all the data. Suppose we have a sequence of non-overlapping and randomly chosen small batches ${B_0,B_1,\ldots,B_n}$ each of size $b$. Then at each step in the gradient descent, we update the parameters using the corresponding batch, that is,</p>
+
+\[w_t=w_{t-1}-\eta \frac{\partial L^{B_{t-1}}}{\partial w_{t-1}}\]
+
+<p>Once we run over all batches, if the parameters $w_t$ do not change considerably, the total distance traveled in parameter space is proportional to the gradient calculated on the full dataset. That is,</p>
+
+\[\sum_{t=0}^T \Delta w_t=-\eta \sum_{t=0}^T  \frac{\partial L^{B_{t-1}}}{\partial w_{t-1}}\simeq -\eta\frac{\partial L}{\partial w_{T}}\]
+
+<p>If the batches have size one, then this is a Monte-Carlo estimation of the unbiased gradient descent $\sum_i \frac{\partial L_i}{\partial w}D(x_i)$, where $D(x_i)$ is the actual distribution, and hence the name stochastic descent. Even if the descent takes us to a local minimum, the batch-gradient may not be zero, and we will avoid being stuck there.</p>
+
+<p><a name="var"></a></p>
+<h3 id="2-variants"><strong>2. Variants</strong></h3>
+
+<ul>
+  <li><strong>Momentum</strong></li>
+</ul>
+
+<p>The stochastic gradient descent can drift the learning over directions in feature space that are not relevant. This happens because at each step the new gradient step does not remember past movements. To compensate for this one may add a “velocity” component $v_t$, that is,</p>
+
+\[\begin{equation*}\begin{split}
+&amp;v_{t}=\gamma v_{t-1}-\eta \frac{\partial L^{B_{t-1}}}{\partial w_{t-1}}\\
+&amp;w_t=w_{t-1}+v_{t}
+\end{split}\end{equation*}\]
+
+<p>where $\gamma$ is the velocity parameter and $v_{0}=0$. Since $\gamma&lt;1$, movements in the far past become less and less important. However, recent movements can contribute significantly. In essence, we are calculating an exponentially decaying average of the past gradients. This average eliminates frequent oscillations and reinforces relevant directions of the descent.</p>
+
+<ul>
+  <li><strong>Nesterov accelerated gradient (NAG)</strong></li>
+</ul>
+
+<p>The NAG learning is very similar to the momentum update, except that it introduces corrections to the gradient. So instead of calculating the gradient at $w_{t-1}$, it is calculated at $w_{t-1}+\gamma v_{t-1}$. That is,</p>
+
+\[\begin{equation*}\begin{split}
+&amp;v_{t}=\gamma v_{t-1}-\eta \frac{\partial L^{B_{t-1}}}{\partial w_{t-1}}(w_{t-1}+\gamma v_{t-1})\\
+&amp;w_t=w_{t-1}+v_{t}
+\end{split}\end{equation*}\]
+
+<p>The shift by $\gamma v_{t-1}$ brings corrections to gradient.</p>
+
+<ul>
+  <li><strong>AdaGrad</strong></li>
+</ul>
+
+<p>Adagrad or adaptive gradient introduces a learning rate that varies through the descent. The algorithm consists in the sequence</p>
+
+\[w_{t,i}=w_{t-1,i}-\frac{\eta}{\sqrt{G_{t-1,ii}}}g_{t-1,i}\]
+
+<p>where $g_{t,i}$ are the gradients for the parameter component $w_{t-1,i}$, and 
+\(G_{t-1,ii}=\sum_{\tau=0}^tg^2_{\tau,i}\)
+ is the sum of all the squared gradients up to time $t$. The solution is actually more complicated but also computationally more expensive. The matrix $G_{t,ii}$ is replaced by the full matrix 
+\(G_t=\sum_{\tau=0}^tg_{\tau}g_{\tau}^T\),
+where $g_t$ is now the gradient vector. This choice guarantees optimal bounds on the regret function. During the stochastic descent new data is introduced at each step in order to estimate the update of the parameters. The regret function calculates the difference between the acumulated loss at time $t$ and the actual minimum of the loss known at time $t$. Bounding the regret guarantees that the update algorithm takes us close to the desired solution.</p>
+
+<ul>
+  <li><strong>AdaDelta</strong></li>
+</ul>
+
+<p>The Adagrad algorithm makes the learning rate very small after some time. This happens because the matrix $G_{t,ii}$ accumulates all the past gradients, and thus becomes increasingly larger. Instead, we can calculate a weighted sum over the squared gradients which prevents contributions in the far past to be relevant. That is,</p>
+
+\[\begin{equation*}\begin{split}
+ &amp;E(g)_t=\gamma E(g)_{t-1}+(1-\gamma)g_t^2\\
+&amp;w_{t,i}=w_{t-1,i}-\frac{\eta}{\sqrt{ E(g)_{t-1,ii} }}g_{t-1,i}
+\end{split}\end{equation*}\]
+
+<p>A similar algorithm which goes by the name <strong>RMSprop</strong> has been developed independently around the same time as the Adadelta.</p>
+
+<ul>
+  <li><strong>Adam</strong></li>
+</ul>
+
+<p>The Adam or adaptive momentum estimation, adds further improvements in the Adadelta algorithm. The update algorithm introduces a momentum component in addition to the squared gradients,</p>
+
+\[\begin{equation*}\begin{split}
+&amp;v_t=\gamma_1 v_{t-1}+(1-\gamma_1) g_t\\
+ &amp;E(g)_t=\gamma_2 E(g)_{t-1}+(1-\gamma_2)g_t^2
+\end{split}\end{equation*}\]
+
+<p>But it also introduces bias corrections. That is, after time $t$, the components above have the expression</p>
+
+\[\begin{equation*}\begin{split}
+&amp;v_t=(1-\gamma_1)\sum_{\tau=0}^{t}\gamma_1^{t-\tau}g_{\tau}\\
+ &amp;E(g)_t=(1-\gamma_2)\sum_{\tau=0}^{t}\gamma_2^{t-\tau}g^2_{\tau}
+\end{split}\end{equation*}\]
+
+<p>Assuming that $g_{\tau}$ is drawn i.i.d according to some distribution, we take the expectation values</p>
+
+\[\begin{equation*}\begin{split}
+&amp;\mathbb{E}(v_t)=\mathbb{E}(g_{t})(1-\gamma_1)\sum_{\tau=1}^{t}\gamma_1^{t-\tau}=\mathbb{E}(g_{t})(1-\gamma_1^t)\\
+ &amp;\mathbb{E}(E(g)_t) = \mathbb{E}(g^2_{t}) (1-\gamma_2)\sum_{\tau=1}^{t}\gamma_2^{t-\tau}=\mathbb{E}(g^2_{t}) (1-\gamma_2^t)
+\end{split}\end{equation*}\]
+
+<p>So to guarantee that we have \(\mathbb{E}(v_t)=\mathbb{E}(g_{t})\) and \(\mathbb{E}(E(g)_t) = \mathbb{E}(g^2_{t})\) we rescale $v_t$ and $E(g)_t$ by $(1-\gamma_1^t)$ and $(1-\gamma_2^t)$ respectively. The update becomes</p>
+
+\[\begin{equation*}\begin{split}
+&amp;\hat{v}_t=\frac{v_t}{1-\gamma_1^t}\\
+ &amp;\hat{E}(g)_t=\frac{E(g)_t}{(1-\gamma_2^t)}\\
+ &amp;w_{t,i}=w_{t-1,i}-\frac{\eta}{\sqrt{ \hat{E}(g)_{t-1,ii} }}\hat{v}_{t-1,i}
+\end{split}\end{equation*}\]
+
+<p>Note that Adam reduces to Adadelta when $\gamma_1=0$.</p>
+
+<h3 id="references"><strong>References</strong></h3>
+<p><br /></p>
+
+<p>[1] <em>Adaptive Subgradient Methods for Online Learning and Stochastic Optimization</em>, J. Duchi, E. Hazan, Y. Singer, (2011)</p>
+
+<p>[2] <em>Adam: a method for stochastic optimization</em>, D. Kingma, J. L. Ba, (2015)</p>
+
+<p>[3] <em>Lecture 6a: Overview of mini-batch gradient descent</em>, G. Hinton, (CS lectures)</p>
+
+<p>[4] <em>Introduction to Online Convex Optimization</em>, E. Hazan</p>
+
+<p>[5] <em>An overview of gradient descent optimization algorithms</em>, S. Ruder, arXiv:1609.04747</p>
+
+  </div><a class="u-url" href="/machine%20learning/2020/12/01/sgd.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

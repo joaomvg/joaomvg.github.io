@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Logistic Regression | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Logistic Regression" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The logistic regression algorithm is a simple yet robust predictor. It is part of a broader class of algorithms known as neural networks. We explain the theory, a learning algorithm using the Newton-Raphson method, and a Python implementation." />
+<meta property="og:description" content="The logistic regression algorithm is a simple yet robust predictor. It is part of a broader class of algorithms known as neural networks. We explain the theory, a learning algorithm using the Newton-Raphson method, and a Python implementation." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/08/10/logistic.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/08/10/logistic.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/sigmoid.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-08-10T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/sigmoid.png" />
+<meta property="twitter:title" content="Logistic Regression" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/08/10/logistic.html","image":"http://localhost:4000/sigmoid.png","headline":"Logistic Regression","dateModified":"2020-08-10T00:00:00+02:00","datePublished":"2020-08-10T00:00:00+02:00","description":"The logistic regression algorithm is a simple yet robust predictor. It is part of a broader class of algorithms known as neural networks. We explain the theory, a learning algorithm using the Newton-Raphson method, and a Python implementation.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/08/10/logistic.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Logistic Regression</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-08-10T00:00:00+02:00" itemprop="datePublished">
+        Aug 10, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#1-logistic-regression"><strong>1. Logistic Regression</strong></a></li>
+  <li><a href="#2-newton-raphson-method"><strong>2. Newton-Raphson method</strong></a></li>
+  <li><a href="#3-decision-boundary"><strong>3. Decision Boundary</strong></a></li>
+  <li><a href="#4-python-implementation"><strong>4. Python Implementation</strong></a></li>
+</ul>
+
+<p><a name="def1"></a></p>
+<h3 id="1-logistic-regression"><strong>1. Logistic Regression</strong></h3>
+
+<p>In the logistic regression algorithm the probability, of a binary class, is calculated as</p>
+
+\[p(c=0|x)=\sigma\Big(\sum_i \omega_i x^i +b\Big)\]
+
+<p>where $\sigma(x)$ is the sigmoid function</p>
+
+\[\sigma(z)=\frac{1}{1+e^{-z}}\]
+
+<p>The sigmoid function approaches quickly one for large values of $z$ while it goes to zero for very negative values.</p>
+<div style="text-align: center"><img src="/images/sigmoid.png" width="60%" /></div>
+
+<p>The predictor is obtained from</p>
+
+\[c=\text{argmax}_{c=0,1}p(c|x)\]
+
+<p>The red dots in the picture above represent a few examples.</p>
+
+<p>The logistic function is composed of a linear followed by a non-linear operation, given by the sigmoid function. This composed operation is usually represented in the diagram</p>
+<div style="text-align: center"><img src="/images/logistic.png" width="30%" /></div>
+
+<p>where $x^i$ are the features of the datapoint $x$. The node (circle) represents the composition of a linear operation followed by a non-linear function. In more complex graphs, the sigmoid function’s output can become the input of an additional non-linear operation. This way, we can stack various non-linear operations, which give an increased level of complexity. This type of graph has the name of neural network.</p>
+
+<p>In the multiclass case, the probabilities have instead the form</p>
+
+\[p(y^k|x)=\frac{e^{z^k(x)}}{Z(x)}\]
+
+<p>where $z^k=-\sum_i\omega^k_i x^i-b^k$ and $Z(x)=\sum_l e^{z^l(x)}$ is a normalization. Diagrammatically this has the form</p>
+
+<div style="text-align: center"><img src="/images/softmax.png" width="30%" /></div>
+
+<p>where the function</p>
+
+\[f(z)^k=\frac{e^{z^k}}{\sum_l e^{z^l}}\]
+
+<p>is the softmax function. It provides with a non-linear operation after the linear transformation $z^k=-\omega^k_ix^i-b$. Since the softmax function is invariant under $z^k\rightarrow z^k+\lambda$, we can choose to fix $z^0$ to zero, which implies $\omega^0_i=0$ and $b^0=0$.</p>
+
+<p>Given a dataset $S={(\vec{x}_0,y_0),(\vec{x}_1,y_1),\ldots (\vec{x}_N,y_N)}$ we determine the parameters $\omega$ and $b$ using maximum-likelihood estimation, that is, we minimize the loss function</p>
+
+\[\begin{equation*}\begin{split}\mathcal{L}=&amp;-\frac{1}{N}\sum_{i=1}^N \ln p(y^i|\vec{x}_i)\\
+=&amp;\frac{1}{N}\sum_i \omega^i_jx^j+b^i+\ln Z(\vec{x}_i)\end{split}\end{equation*}\]
+
+<p>One of the main advantages of using the logistic function is that it makes the loss function convex, which allows us to apply more robust optimization algorithms like the Newton-Raphson method. To see that the loss function is convex, lets for simplicity define $\omega^k\equiv(\omega^k_i,b^k)$ and $x\equiv(x^i,1)$. Calculating the derivatives of the loss function</p>
+
+\[\frac{\partial \mathcal{L}}{\partial \omega^{\mu}_{\nu}}=\langle \delta^k_{\mu}x^{\nu}\rangle_{y^k,x}-\langle x^{\nu}p_{\mu}(x)\rangle_{x}\]
+
+<p>where $p_{\mu}(x)$ is the probability, $\delta$ is the Kroenecker delta function, and $\langle \rangle$ represents sample averages. And the second derivatives</p>
+
+\[\frac{\partial^2 \mathcal{L}}{\partial \omega^{\mu}_{\nu} \partial \omega^{\alpha}_{\beta}}=\langle x^{\nu}x^{\beta}\delta_{\mu\alpha}p_{\mu}(x) \rangle_x -\langle x^{\nu}x^{\beta}p_{\mu}(x)p_{\alpha}(x) \rangle_x\]
+
+<p>To show this is a convex optimization problem, we build the quadratic polynomial in $\lambda^{\mu}_{\nu}$ at a point $x$,</p>
+
+\[\begin{equation*}\begin{split}&amp;\sum_{\mu,\nu,\alpha,\beta}x^{\nu}x^{\beta}\delta_{\mu\alpha}p_{\mu}(x)\lambda^{\mu}_{\nu}\lambda^{\alpha}_{\beta}-x^{\nu}x^{\beta}p_{\mu}(x)p_{\alpha}(x)\lambda^{\mu}_{\nu}\lambda^{\alpha}_{\beta}=\\
+ &amp;\sum_{\mu} p_{\mu}(x)(\lambda^{\mu}_{\nu}x^{\nu})^2-\Big(\sum_{\mu}p_{\mu}(x)\lambda^{\mu}_{\nu}x^{\nu}\Big)^2=\langle \lambda^2\rangle-\langle \lambda\rangle^2\geq 0\end{split}\end{equation*}\]
+
+<p>Summing over $x$ we show that</p>
+
+\[\sum_{\mu,\nu,\alpha,\beta}\frac{\partial^2 \mathcal{L}}{\partial \omega^{\mu}_{\nu} \partial \omega^{\alpha}_{\beta}} \lambda^{\mu}_{\nu}\lambda^{\alpha}_{\beta}\geq 0\]
+
+<p><a name="newton"></a></p>
+<h3 id="2-newton-raphson-method"><strong>2. Newton-Raphson method</strong></h3>
+
+<p>The Newton-Raphson method provides with a second-order optimization algorithm. In essence it consists in solving iteratively a second-order expansion of the loss function. First, we Taylor expand the loss function to second order</p>
+
+\[\mathcal{L}=\mathcal{L}(\omega_0)+\frac{\partial \mathcal{L}}{\partial\omega_i}|_{\omega_0}\Delta\omega_i+\frac{1}{2}\frac{\partial^2 \mathcal{L}}{\partial\omega_i\partial\omega_j}|_{\omega_0}\Delta\omega_i\Delta\omega_j+\mathcal{O}(\Delta\omega^3)\]
+
+<p>Then we solve for $\Delta\omega$</p>
+
+\[\Delta\omega=\text{argmin}\frac{\partial \mathcal{L}}{\partial\omega_i}|_{\omega_0}\Delta\omega_i+\frac{1}{2}\frac{\partial^2 \mathcal{L}}{\partial\omega_i\partial\omega_j}|_{\omega_0}\Delta\omega_i\Delta\omega_j\]
+
+<p>that is,</p>
+
+\[\Delta\omega_i=-\sum_j\Big(\frac{\partial^2 \mathcal{L}}{\partial\omega_i\partial\omega_j}|_{\omega_0}\Big)^{-1}\frac{\partial \mathcal{L}}{\partial\omega_j}|_{\omega_0}\]
+
+<p>The algorithm consists of updating the reference point $\omega_0$ as</p>
+
+\[\omega_0\rightarrow \omega_0+\Delta\omega\]
+
+<p>and continuing iteratively by solving the derivatives on the new reference point. In the logistic regression case, the parameter $\omega_i$ is a matrix with components $\omega^k_i$. Determining the inverse of a $n\times n$ matrix is an order $\mathcal{O}(n^3)$ (with Gaussian elimination) process, while the matrix-vector multiplication operations are of order $\mathcal{O}(n^2)$. Therefore each step of the Newton-Raphson method is a $\mathcal{O}(n^3)$ process. Since $n=K(d+1)$ where $K$ is the number of classes and $d$ is the feature dimension, the Newton-Raphson is a fast algorithm provided both $K$ and $d$ are relatively small.</p>
+
+<p><a name="decision"></a></p>
+<h3 id="3-decision-boundary"><strong>3. Decision Boundary</strong></h3>
+
+<p>In a binary classification problem the decision boundary of the logistic regression is a hyperplane. This is because the threshold value 
+$p(0|x)=0.5$
+ implies the linear constraint 
+ $\sum_i\omega_i x^i+b=0$. For more classes, the decision boundary corresponds to regions bounded by hyperplanes. For any two classes $c_1,c_2$ we determine a pseudo-boundary, that is, the hyperplane represented by the equation $p(c_1|x)=p(c_2|x)$. This gives</p>
+
+\[\text{hyperplane}_{c_1,c_2}:\;\sum_i(\omega^{c_1}_i-\omega^{c_2}_i)x^i+b^{c_1}-b^{c_2}=0\]
+
+<p>For $N$ classes we have $N(N-1)/2$ hyperplanes. We can use these hyperplanes to determine the predicted class. For example, in two dimensions</p>
+<div style="text-align: center"><img src="/images/logistic_decision.png" width="60%" /></div>
+
+<p>We can show that the regions for the predicted classes are simply connected convex sets. Consider two points $x_1$ and $x_2$, both belonging to the same predicted class $k$. We construct the set</p>
+
+\[(1-\lambda)x_1+\lambda x_2,\;0\leq\lambda\leq 1\]
+
+<p>Since $\sum_i\omega^k_ix^i_1+b^k\geq \sum_i\omega^{j}_i x^i_1+b^j,\;j\neq k$ and similarly for $x_2$, we must have</p>
+
+\[(1-\lambda)\sum_i\omega^k_ix^i_1+\lambda \sum_i\omega^k_ix^i_2+b^k\geq  (1-\lambda)\sum_i\omega^j_ix^i_1+\lambda \sum_i\omega^j_ix^i_2 +b^j,\;j\neq k\]
+
+<p>since $\lambda\geq 0$ and $1-\lambda\geq 0$. This means that all the points belonging to the set connecting $x_1$ and $x_2$ have the same class, which thus implies that the region with predicted class $k$ must be singly connected, and convex. For example, for the data above</p>
+<div style="text-align: center"><img src="/images/logistic_decision_bnd.png" width="70%" /></div>
+
+<p><a name="python"></a></p>
+<h3 id="4-python-implementation"><strong>4. Python Implementation</strong></h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># class ProbSoftmax is the model
+</span><span class="k">class</span> <span class="nc">ProbSoftmax</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n_features</span><span class="p">,</span><span class="n">n_classes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_features</span><span class="o">=</span><span class="n">n_features</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_classes</span><span class="o">=</span><span class="n">n_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,(</span><span class="n">n_classes</span><span class="p">,</span><span class="n">n_features</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+        
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        
+        <span class="n">wx</span><span class="o">=-</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">wx</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">wx</span><span class="p">)</span>
+        <span class="n">Z</span><span class="o">=</span><span class="n">wx</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wx</span><span class="o">/</span><span class="n">Z</span>
+</code></pre></div></div>
+<p>Optimizer class with backward and step methods:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># class logloss calculates the loss function and the Newton-Raphson step.
+</span><span class="k">class</span> <span class="nc">logloss</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">prob</span><span class="o">=</span><span class="n">model</span> <span class="c1">#model: ProbSoftmax object
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">delta_w</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">nf</span><span class="o">=</span><span class="n">model</span><span class="p">.</span><span class="n">n_features</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">nc</span><span class="o">=</span><span class="n">model</span><span class="p">.</span><span class="n">n_classes</span>
+        
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">prob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">p</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:],</span><span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="o">/</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">z</span>
+    
+    <span class="k">def</span> <span class="nf">back_square</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">prob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span>
+        
+        <span class="n">z</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">idt</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">outer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">outer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">z</span><span class="o">+=</span><span class="n">np</span><span class="p">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">idt</span><span class="o">-</span><span class="n">w</span><span class="p">,</span><span class="n">axes</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">z</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">z</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">z</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">z</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">z</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="o">/</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">z</span>
+    
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">prob</span><span class="p">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span><span class="o">+=</span><span class="bp">self</span><span class="p">.</span><span class="n">delta_w</span>
+        
+    <span class="k">def</span> <span class="nf">delta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        
+        <span class="n">f</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">backward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">M</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">back_square</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">M_inv</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">inv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+        <span class="n">delta_w</span><span class="o">=-</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">M_inv</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">delta_w</span><span class="o">=</span><span class="n">delta_w</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">nf</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">delta_w</span><span class="o">=</span><span class="n">delta_w</span><span class="p">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">delta_w</span>
+        
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="c1">#y is hot encoded
+</span>        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">prob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="o">*</span><span class="n">y</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">delta_w</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">delta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+<p>Training function:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">training</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">num_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">logloss</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iter</span><span class="p">):</span>
+        <span class="n">L</span><span class="o">=</span><span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="c1">#when calling, the object calculates the derivatives and determines the Newton-Raphson step
+</span>        <span class="n">loss</span><span class="p">.</span><span class="n">step</span><span class="p">()</span> <span class="c1">#it shifts w by delta_w
+</span>        <span class="k">print</span><span class="p">(</span><span class="s">"Loss="</span><span class="p">,</span><span class="n">L</span><span class="p">,</span><span class="s">" iter:"</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/machine%20learning/2020/08/10/logistic.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

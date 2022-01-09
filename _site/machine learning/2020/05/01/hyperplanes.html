@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Hyperplanes and classification | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Hyperplanes and classification" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We study binary classification problem in R**d using hyperplanes. We show that the VC dimension is d+1." />
+<meta property="og:description" content="We study binary classification problem in R**d using hyperplanes. We show that the VC dimension is d+1." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/05/01/hyperplanes.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/05/01/hyperplanes.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/hyperplanes.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-05-01T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/hyperplanes.png" />
+<meta property="twitter:title" content="Hyperplanes and classification" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/05/01/hyperplanes.html","image":"http://localhost:4000/hyperplanes.png","headline":"Hyperplanes and classification","dateModified":"2020-05-01T00:00:00+02:00","datePublished":"2020-05-01T00:00:00+02:00","description":"We study binary classification problem in R**d using hyperplanes. We show that the VC dimension is d+1.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/05/01/hyperplanes.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Hyperplanes and classification</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-05-01T00:00:00+02:00" itemprop="datePublished">
+        May 1, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="1-hyperplanes"><strong>1. Hyperplanes</strong></h3>
+
+<p>Consider a set of $d+1$ points in $\mathbb{R}^{d}$ dimensions and assume that no group of three points is collinear- this way, any set of $d$ points forms a hyperplane. Firstly, we shall demonstrate that if a set of $d$ points is shattered in $\mathbb{R}^{d-1}$ dimensions, then $d+1$ points are also shattered in $\mathbb{R}^d$. We can use this to reduce the problem to two dimensions, where we have seen that $VC_{\text{dim}}=3$.</p>
+
+<p>Consider the representation in the picture below. Choose $d$ points and take the hyperplane formed by these. If the remaining point belongs to the hyperplane, then we can consider the projection to $d-1$ dimensions, and we are left with the case of $(d-1)+2$ points in $\mathbb{R}^{d-1}$, which we shall analyze later. If this is not the case, then we can show that if the $d$ points on the hyperplane are separable, we can always find a hyperplane in $\mathbb{R}^d$ that separates all the points. In the figure below, the dashed line on $H_d$ represents the hyperplane in $\mathbb{R}^{d-1}$ that separates the set of $d$ points. It is easy to see that any hyperplane that contains the remaining point and the dashed line (hyperplane in one lower dimension) is the solution to this problem.</p>
+
+<div style="text-align: center"><img src="/images/hyperplanes_dplus1.png" width="60%" /></div>
+
+<p>We shall consider now the case of $d+2$ points in $\mathbb{R}^d$. For this purpose, we shall use Radon’s theorem that states that any set of $d+2$ points in $\mathbb{R}^d$ can be partitioned in two sets $X_1$ and $X_2$ such that the corresponding convex hulls intersect. This theorem implies that $d+2$ points in $\mathbb{R}^d$ cannot be shattered because if they were, then we would have two non-intersecting convex hulls separated by a plane, thus contradicting the theorem.</p>
+
+<p><strong>Proof</strong></p>
+
+<p>For $d+2$ points $x_i$ in $\mathbb{R}^d$ one can always choose $d+2$ parameters $\alpha_i$ such that:</p>
+
+\[\sum_{i=1}^{d+2}\alpha_ix_i=0,\;\; \sum_{i=1}^{d+2}\alpha_i=0\]
+
+<p>The reason is because one has $d+2$ unknowns ($\alpha_i$) for $d+1$ equations ($d$ coming from the first vector equation and an additional from the constraint on $\alpha$). The second equation can be rewritten as a sum over positive $\alpha_{&gt;}$ and negative $\alpha_{&lt;}$, that is, $\sum_{i}\alpha_i^{&gt;}=\sum_{i}\alpha_i^{&lt;}$. Define $\alpha=\sum_i\alpha_i^{&gt;}$, then we have</p>
+
+\[\sum_i\frac{\alpha_i^{&gt;}}{\alpha}=\sum_i\frac{\alpha_i^{&lt;}}{\alpha}\]
+
+<p>which is a sum over numbers in the interval $(0,1]$. The vector equation separates into two terms</p>
+
+\[\sum_{i}\frac{\alpha_i^{&gt;}}{\alpha}x_i=\sum_i\frac{\alpha_i^{&lt;}}{\alpha}x_i\]
+
+<p>and each of the sets $X_1={x_i: \alpha_i^{&gt;}\neq 0}$ and $X_2={x_i: \alpha_i^{&lt;}\neq 0}$ form convex hulls. This means that $X_1$ and $X_2$ intersect.</p>
+<h3 id="references"><strong>References</strong></h3>
+<p><br /></p>
+
+<p>[1] <em>Foundations of machine learning</em>, M. Mohri, A. Rostamizadeh, A. Talwalkar</p>
+
+  </div><a class="u-url" href="/machine%20learning/2020/05/01/hyperplanes.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

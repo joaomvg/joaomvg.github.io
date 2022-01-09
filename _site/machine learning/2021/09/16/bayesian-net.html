@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Bayesian Network | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Bayesian Network" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Bayesian networks encode probabilistic models in directed acyclic graphs. A node represents a covariate and the edges encode the conditional probabilities. We describe bayesian networks, give examples and explain how to determine the graph given observed data- structure learning." />
+<meta property="og:description" content="Bayesian networks encode probabilistic models in directed acyclic graphs. A node represents a covariate and the edges encode the conditional probabilities. We describe bayesian networks, give examples and explain how to determine the graph given observed data- structure learning." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2021/09/16/bayesian-net.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2021/09/16/bayesian-net.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/bn_cover.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-09-16T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/bn_cover.png" />
+<meta property="twitter:title" content="Bayesian Network" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2021/09/16/bayesian-net.html","image":"http://localhost:4000/bn_cover.png","headline":"Bayesian Network","dateModified":"2021-09-16T00:00:00+02:00","datePublished":"2021-09-16T00:00:00+02:00","description":"Bayesian networks encode probabilistic models in directed acyclic graphs. A node represents a covariate and the edges encode the conditional probabilities. We describe bayesian networks, give examples and explain how to determine the graph given observed data- structure learning.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2021/09/16/bayesian-net.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Bayesian Network</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2021-09-16T00:00:00+02:00" itemprop="datePublished">
+        Sep 16, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="dag">DAG</h3>
+
+<p>A Bayesian network encodes a probabilistic model in a directed acyclic graph or DAG. For example, for a model with three variables A, B and C, whereby A and B are independent, we have</p>
+
+\[P(C,A,B)=P(C|A,B)P(A)P(B)\]
+
+<p>This can be represented with the graph:</p>
+
+<div style="text-align: center"><img src="/blog-data-science/images/bn_dag.png" width="40%" /></div>
+
+<p>Since A and B are independent variables, there is no arrow in between them. On the other hand, if we introduce an arrow in between A and B,</p>
+<div style="text-align: center"><img src="/blog-data-science/images/bn_dag_2.png" width="40%" /></div>
+
+<p>then the probabilistic model becomes</p>
+
+\[P(C,A,B)=P(C|A,B)P(A|B)P(B)\]
+
+<p>The rule is that the conditional probabilty at a node only depends on the parents, that is, the nodes which have arrows pointing towards that node. That is,</p>
+
+\[P(x_1,x_2,\ldots,x_n)=\prod_i^n P(x_i|\text{pa}(x_i))\]
+
+<p>where $\text{pa}(x_i)$ denotes the parents of $x_i$.</p>
+
+<p>The network can be used to describe causality relationships because of the directionality of the graph edges. The idea of causality, however, can be confusing because the probability model is defined on a set, which obviously has no prefered direction. What this means is, for example, that we can write 
+$P(A,B)$ as $P(A|B)P(B)$ or $P(B|A)P(A)$. Causality on the other hand pressuposes a prefered direction. For example, to model a fire ignited by a spark we write</p>
+
+\[P(\text{fire}| \text{spark})\]
+
+<p>that is the chance of starting a fire given that there has been a spark. This gives a very intuitive way of understanding the chain of events that lead to a fire. However, if we equivalently write the model using the reverse probability 
+$P(\text{spark}|\text{fire})$, it is more difficult to make sense of the order of events. If we require that $P(\text{spark=True}|\text{fire=True})&lt;1$ then we need to ensure that $P(\text{fire=True}|\text{spark=False})&gt;0$, that is, that there can be a fire without a spark. In other words, we need to extend the space of events to include fires started by other reasons.</p>
+
+<h3 id="structure-learning">Structure Learning</h3>
+
+<p>An important question is to determine the graph that better explains the observed data. This requires exploring the space of possible graphs and therefore the name “structure learning”.</p>
+
+<p>We motivate this by considering a simple problem. We take the same DAG as above with A and B independent and probabilities:</p>
+
+\[\begin{equation}\begin{split}&amp;P(a=1)=0.2, \\
+&amp;P(b=1)=0.5,\\
+&amp;P(c=1,a=1,b=1)=0.7,\\
+&amp;P(c=1,a=1,b=0)=0.8,\\
+&amp;P(c=1,a=0,b=1)=0.4,\\
+&amp;P(c=1,a=0,b=0)=0.6\end{split}\end{equation}\]
+
+<p>and generate a dataset by random sampling:</p>
+<div style="text-align: center"><img src="/blog-data-science/images/bn_data.png" width="30%" /></div>
+
+<p>Now we can re-determine the various parameteres using maximum likelihood estimation. For each sample we calculate the corresponding probability and its logarithm. The total log-likelihood is the sum over all samples. That is,</p>
+
+\[\begin{equation}\begin{split}&amp;\sum_{i,j,k}\log(P(a=i,b=j,c=k))\\
+&amp;=\sum_i\log(P(a=i))+\sum_j\log(P(b=j))+\sum_{k|(i,j)}\log(P(c=k|a=i,b=j))\\
+&amp;=N_{a=1}\log(p(a=1))+N_{a=0}\log(1-p(a=1))\\
+&amp;+N_{b=1}\log(p(b=1))+N_{b=0}\log(1-p(b=1))\\
+&amp;+N_{c=1|(1,1)}\log(p(c=1|1,1))+N_{c=0|(1,1)}\log(1-p(c=1|1,1))\\
+&amp;+N_{c=1|(1,0)}\log(p(c=1|1,0))+N_{c=0|(1,0)}\log(1-p(c=1|1,0))\\
+&amp;+N_{c=1|(0,1)}\log(p(c=1|0,1))+N_{c=0|(0,1)}\log(1-p(c=1|0,1))\\
+&amp;+N_{c=1|(0,0)}\log(p(c=1|0,0))+N_{c=0|(0,0)}\log(1-p(c=1|0,0))\\
+\end{split}\end{equation}\]
+
+<p>Differentiating with respect to 
+$p(a=1),p(b=1)$ and $p(c=1|i,j)$ we obtain</p>
+
+\[\begin{equation}\begin{split}&amp;p(a=1)=\frac{N_{a=1}}{N_{a=0}+N_{a=1}}\\
+&amp;p(b=1)=\frac{N_{b=1}}{N_{b=0}+N_{b=1}}\\
+&amp;p(c=1|i,j)=\frac{N_{c=1|(i,j)}}{N_{c=0|(i,j)}+N_{c=1|(i,j)}}\end{split}\end{equation}\]
+
+<p>The Python code calculates the probabilities and the Log-likelihood:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">L</span><span class="o">=</span><span class="mi">0</span> <span class="c1">#Log-likelihood
+</span><span class="n">N</span><span class="o">=</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">Na</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+<span class="n">Nb</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'b'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+<span class="n">pa</span><span class="o">=</span><span class="n">Na</span><span class="o">/</span><span class="n">N</span>
+<span class="n">pb</span><span class="o">=</span><span class="n">Nb</span><span class="o">/</span><span class="n">N</span>
+
+<span class="n">L</span><span class="o">+=</span><span class="n">Na</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="n">Na</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">pa</span><span class="p">)</span>
+<span class="n">L</span><span class="o">+=</span><span class="n">Nb</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="n">Nb</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">pb</span><span class="p">)</span>
+
+<span class="n">pc</span><span class="o">=</span><span class="p">{}</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">Nc</span><span class="o">=</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'b'</span><span class="p">]</span><span class="o">==</span><span class="n">j</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'c'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">)).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">Nij</span><span class="o">=</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'b'</span><span class="p">]</span><span class="o">==</span><span class="n">j</span><span class="p">)).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">Nc</span><span class="o">/</span><span class="n">Nij</span>
+        <span class="n">pc</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span><span class="o">=</span><span class="n">p</span>
+        <span class="n">L</span><span class="o">+=</span><span class="n">Nc</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">Nij</span><span class="o">-</span><span class="n">Nc</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+<span class="n">L</span><span class="o">=-</span><span class="n">L</span><span class="o">/</span><span class="n">N</span>
+</code></pre></div></div>
+
+<p>from which we obtain</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pc</span><span class="p">:</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="mf">0.6072338257768721</span><span class="p">,</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="mf">0.3985257985257985</span><span class="p">,</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="mf">0.7852216748768472</span><span class="p">,</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="mf">0.7007077856420627</span><span class="p">}</span>
+
+<span class="n">pa</span><span class="p">:</span> <span class="mf">0.2004</span>
+<span class="n">pb</span><span class="p">:</span> <span class="mf">0.5059</span>
+</code></pre></div></div>
+<p>validating the initial model. The total Log-likelihood is calculated</p>
+
+\[\begin{equation}\begin{split}L=&amp;-\frac{1}{N}\sum_{i,j,k}\log(P(a=i,b=j,c=k))\\
+=&amp;2.31237\end{split}\end{equation}\]
+
+<p>We consider in addition three different models with the following free parameters:</p>
+<ul>
+  <li>Model 2: $P(A),\,P(B)$ and $P(C)$</li>
+  <li>Model 3: 
+$P(A),\,P(B)$, and $P(C|B)$</li>
+  <li>Model 4: 
+$P(A),\,P(B),\,P(B|A),\,P(C|A,B)$</li>
+</ul>
+
+<p>For model 2, where A, B and C are all independent, the Log-likelihood is</p>
+
+\[L=2.35073\]
+
+<p>which is larger. 
+For model 3, the free parameters are $P(a=1)$, $P(c=1|b=0,1)$ and $P(b=1)$. The log-likelihood is still larger:</p>
+
+\[L=2.33311\]
+
+<p>The model 4 is the most general graph which contains 7 parameters. In this case the log-likelihood is smaller:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">L</span><span class="o">=</span><span class="mi">0</span> <span class="c1">#Log-likelihood
+</span><span class="n">N</span><span class="o">=</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">Na</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+<span class="n">pa</span><span class="o">=</span><span class="n">Na</span><span class="o">/</span><span class="n">N</span>
+
+<span class="n">L</span><span class="o">+=</span><span class="n">Na</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="n">Na</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">pa</span><span class="p">)</span>
+
+<span class="n">pc</span><span class="o">=</span><span class="p">{}</span>
+<span class="n">pb</span><span class="o">=</span><span class="p">{}</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">Nb</span><span class="o">=</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'b'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">)).</span><span class="nb">sum</span><span class="p">()</span>
+    <span class="n">Ni</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="n">i</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+    <span class="n">p</span><span class="o">=</span><span class="n">Nb</span><span class="o">/</span><span class="n">Ni</span>
+    <span class="n">pb</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">p</span>
+    <span class="n">L</span><span class="o">+=</span><span class="n">Nb</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">Ni</span><span class="o">-</span><span class="n">Nb</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">Nc</span><span class="o">=</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'b'</span><span class="p">]</span><span class="o">==</span><span class="n">j</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'c'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">)).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">Nij</span><span class="o">=</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s">'a'</span><span class="p">]</span><span class="o">==</span><span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'b'</span><span class="p">]</span><span class="o">==</span><span class="n">j</span><span class="p">)).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">Nc</span><span class="o">/</span><span class="n">Nij</span>
+        <span class="n">pc</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)]</span><span class="o">=</span><span class="n">p</span>
+        <span class="n">L</span><span class="o">+=</span><span class="n">Nc</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">Nij</span><span class="o">-</span><span class="n">Nc</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+<span class="n">L</span><span class="o">=-</span><span class="n">L</span><span class="o">/</span><span class="n">N</span>
+</code></pre></div></div>
+
+\[L=1.84381\]
+
+<p>However, when we inspect the probabilities 
+$P(b=1|a)$ we find:</p>
+
+\[\begin{equation}\begin{split}&amp;p(b=1|a=0)=0.49804\\
+&amp;p(b=1|a=1)=0.49985
+\end{split}\end{equation}\]
+
+<p>which have almost the same value. In fact, we can check that the difference is not statistically significant, but only due to finite sample size. To do this, we generate permutation samples for the values ‘b’ and calculate
+ $p(b=1|a=0)$ and $p(b=1|a=1)$. Then we determine the distribution of the difference $p(b=1|a=1)-p(b=1|a=0)$. The 95% probability interval is:</p>
+
+\[[-0.00773, 0.00770]\]
+
+<p>while the observed difference is $0.00181$, which is well inside that interval. So effectively, model 4 is statistically the same as the model 1.</p>
+
+<h3 id="bnlearn">BNLearn</h3>
+
+<p>BNLearn is a Python library for bayesian learning. We can perform structure learning very easily:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">bnlearn</span> <span class="k">as</span> <span class="n">bn</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">bn</span><span class="p">.</span><span class="n">structure_learning</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">bn</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div></div>
+<div style="text-align: center"><img src="/blog-data-science/images/bnlearn_fit.png" width="75%" /></div>
+
+<p>which is precisely the model that we have designed.</p>
+
+  </div><a class="u-url" href="/machine%20learning/2021/09/16/bayesian-net.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

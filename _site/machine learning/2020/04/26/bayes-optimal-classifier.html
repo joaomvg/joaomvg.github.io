@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Bayes Optimal Classifier | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Bayes Optimal Classifier" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The Bayes optimal classifier achieves minimal error across all possible classifiers. We give a proof of this and provide some numerical examples." />
+<meta property="og:description" content="The Bayes optimal classifier achieves minimal error across all possible classifiers. We give a proof of this and provide some numerical examples." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/04/26/bayes-optimal-classifier.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/04/26/bayes-optimal-classifier.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/optimal_bayes.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-04-26T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/optimal_bayes.png" />
+<meta property="twitter:title" content="Bayes Optimal Classifier" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/04/26/bayes-optimal-classifier.html","image":"http://localhost:4000/optimal_bayes.png","headline":"Bayes Optimal Classifier","dateModified":"2020-04-26T00:00:00+02:00","datePublished":"2020-04-26T00:00:00+02:00","description":"The Bayes optimal classifier achieves minimal error across all possible classifiers. We give a proof of this and provide some numerical examples.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/04/26/bayes-optimal-classifier.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Bayes Optimal Classifier</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-04-26T00:00:00+02:00" itemprop="datePublished">
+        Apr 26, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="table-of-contents"><strong>Table of contents</strong></h3>
+
+<ol>
+  <li><a href="#bayes">Optimal classifier</a></li>
+  <li><a href="#multiclass">Multiple classes</a></li>
+</ol>
+
+<p><a name="bayes"></a></p>
+<h3 id="1-optimal-classifier"><strong>1. Optimal classifier</strong></h3>
+<p><br />
+The Bayes optimal classifier is a binary predictor which has the lowest generalisation error. That is, for any other predictor \(g\) we always have</p>
+
+\[L(D,h_{\text{Bayes}})\leq L(D,g)\]
+
+<p>The Bayes predictor is defined as follows:</p>
+
+\[h_{\text{Bayes}}=\text{argmax}_{y}P(y|x)\]
+
+<p><em>Proof</em>:
+Define \(L(D,g)=\sum_{x}\mathbb{1}\left[g(x)\neq y(x)\right]D(x,y)\). Then use the Bayes property \(D(x,y)=D(y|x)D(x)\) and the fact that we have only two classes, say \(y=0,1\):</p>
+
+\[L(D,g)=\sum_{x:g(x)=0}D(y=1|x)D(x)+\sum_{x:g(x)=1}D(y=0|x)D(x)\]
+
+<p>Use the property that \(a\geq \text{Min}(a,b)\) and write</p>
+
+\[\begin{equation}\begin{split}L(D,g)\geq\sum_{x:g(x)=0}\text{Min}\big(D(y=1|x),D(y=0|x)\big)D(x)+\\
+\sum_{x:g(x)=1}\text{Min}\big(D(y=1|x),D(y=0|x)\big)D(x)\\
+=\sum_{x}\text{Min}\big(D(y=1|x),D(y=0|x)\big)D(x)\end{split}\end{equation}\]
+
+<p>Note that the r.h.s is precisely the loss of the Bayes classifier. That  is,</p>
+
+\[\begin{equation}\begin{split}L(D,h_{\text{Bayes}})=&amp;\sum_{x:h(x)=0}D(y=1|x)D(x)+\sum_{x:h(x)=1}D(y=0|x)D(x)\\
+=&amp;\sum_{D(y=1|x)&lt;D(y=0|x)}D(y=1|x)D(x)+\sum_{D(y=1|x)&gt;D(y=0|x)}D(y=0|x)D(x)\end{split}\end{equation}\]
+
+<p><a name="multiclass"></a></p>
+<h3 id="-2-multiple-classes-"><span style="color:dark"> <strong>2. Multiple classes</strong> </span></h3>
+<p><br />
+Can we generalise this to multi-classes? We can use $a\geq \text{Min}(a,b,c,\ldots)$ to write</p>
+
+\[\begin{equation}
+\begin{split}
+L(D,g)\geq &amp;\sum_{x:g(x)\neq y_1}\text{Min}\big(D(y_1|x),D(y_2|x),\ldots\big)D(x)+\\
+&amp;\sum_{x:g(x)\neq y_2}\text{Min}\big(D(y_1|x),D(y_2|x),\ldots\big)D(x)+\ldots \end{split}
+\end{equation}\]
+
+<p>Suppose we extend the Bayes optimal classifier to more classes by predicting the class that has higher probability. Then we have</p>
+
+\[\begin{equation}\begin{split}
+L(D,h)=\sum_{x:h(x)=y_1\cup h(x)=y_2\ldots}D(y_0|x)D(x)+\sum_{x:h(x)=y_0\cup h(x)=y_2\ldots}D(y_1|x)D(x)+\ldots
+\end{split}\end{equation}\]
+
+<p>Since $h(x)$ is a predictor the sets \(S_i=\{x:h(x)=y_i\}\) are disjoint and so we can simplify the sums above. For example</p>
+
+\[\begin{equation}\begin{split}\sum_{x:h(x)=y_1\cup h(x)=y_2\ldots}D(y_0|x)D(x)=\sum_{x:h(x)=y_1}D(y_0|x)D(x)+\sum_{x:h(x)=y_2\ldots}D(y_0|x)D(x)+\ldots\end{split}\end{equation}\]
+
+<p>The issue we face now is that since we have multiple classes the maximum value does not determine uniquely the minimum value, and vice-versa, and hence we cannot apply the reasoning used in the binary case. Following similar steps as before, one can show that the multi-class Bayes classifier does not saturate the bound Eq.1. As a matter of fact there is no classifier that saturates the bound Eq.1. 
+For that to happen we would need a classifier $h(x)$ such that when $h(x)=y_i$ we have $\text{Min}\big(D(y_1|x),D(y_2|x),\ldots\big)=D(y_{k\neq i}|x)\,\forall i,k$. This means that for a fixed $i$ we have $D(y_{k\neq i}|x)=D(y_{j\neq i}|x)\, \forall k,j\neq i$. It is then easy to see that this implies that $D(y_i|x)$ is a constant, independent of $x$, contradicting our assumption.</p>
+
+<h3 id="python-implementation"><strong>Python implementation</strong></h3>
+<p><br /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="n">sns</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
+</code></pre></div></div>
+<p>We compare three different hypotheses:</p>
+
+<ol>
+  <li>Optimal Bayes: $h_{\text{Bayes}}$</li>
+  <li>Circumference hypothesis: $h$</li>
+  <li>Gaussian Naive Bayes: $h_{GNB}$</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#P(y|x) definition
+</span><span class="k">def</span> <span class="nf">prob</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span><span class="n">q</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span> <span class="c1">#prob of y=1
+</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">&gt;=</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">p</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">q</span>
+
+<span class="c1">#coloring function
+</span><span class="k">def</span> <span class="nf">color</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">()</span><span class="o">&lt;=</span><span class="n">prob</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">'blue'</span> <span class="c1">#y=1
+</span>    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">'red'</span> <span class="c1">#y=0
+</span></code></pre></div></div>
+<p>The code that defines the various hypotheses:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">r</span><span class="o">=</span><span class="mf">1.2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">&gt;=</span><span class="n">r</span><span class="p">:</span> <span class="c1">#if r=1 then h(x)=bayes(x)
+</span>        <span class="k">return</span> <span class="s">'blue'</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">'red'</span>
+
+<span class="k">def</span> <span class="nf">bayes</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">prob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">&gt;=</span><span class="mf">0.5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">'blue'</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">'red'</span>
+
+<span class="k">def</span> <span class="nf">GNB</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">GaussianNB</span><span class="p">()</span>
+    <span class="n">model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s">'x'</span><span class="p">,</span><span class="s">'y'</span><span class="p">]],</span><span class="n">df</span><span class="p">[</span><span class="s">'sample'</span><span class="p">])</span>
+    <span class="n">ypred</span><span class="o">=</span><span class="n">model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s">'x'</span><span class="p">,</span><span class="s">'y'</span><span class="p">]])</span>
+
+    <span class="k">return</span> <span class="n">ypred</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">errors</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span> <span class="c1">#draw multiple samples from multivariate_normal
+</span>    <span class="n">sample</span><span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">class_y</span><span class="o">=</span><span class="p">[</span><span class="n">color</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">"x"</span><span class="p">,</span><span class="s">"y"</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'sample'</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="p">.</span><span class="n">Series</span><span class="p">(</span><span class="n">class_y</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'h_bayes'</span><span class="p">]</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="s">'x'</span><span class="p">,</span><span class="s">'y'</span><span class="p">]].</span><span class="nb">apply</span><span class="p">(</span><span class="n">bayes</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'h'</span><span class="p">]</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="s">'x'</span><span class="p">,</span><span class="s">'y'</span><span class="p">]].</span><span class="nb">apply</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'GNB'</span><span class="p">]</span><span class="o">=</span><span class="n">GNB</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="n">error_GNB</span><span class="o">=</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'sample'</span><span class="p">]</span><span class="o">!=</span><span class="n">df</span><span class="p">[</span><span class="s">'GNB'</span><span class="p">]).</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">error_bayes</span><span class="o">=</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'sample'</span><span class="p">]</span><span class="o">!=</span><span class="n">df</span><span class="p">[</span><span class="s">'h_bayes'</span><span class="p">]).</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">error_h</span><span class="o">=</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'sample'</span><span class="p">]</span><span class="o">!=</span><span class="n">df</span><span class="p">[</span><span class="s">'h'</span><span class="p">]).</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="n">errors</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">error_h</span><span class="p">,</span><span class="n">error_GNB</span><span class="p">,</span><span class="n">error_bayes</span><span class="p">])</span>
+</code></pre></div></div>
+<p>then check whether the other hypotheses have smaller error:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">len</span><span class="p">([</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">errors</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">or</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;</span><span class="n">e</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+</code></pre></div></div>
+<p>Note that these are the sample errors. Therefore, it is possible to find an error smaller than the Bayes error. However, if we take large samples it becomes almost improbable for that to happen.</p>
+
+<p>Some plots:</p>
+<div style="text-align: center"><img src="/images/bayes_sample.png" width="70%" /></div>
+<div style="text-align: center"><img src="/images/optimal_bayes.png" width="70%" /></div>
+<div style="text-align: center"><img src="/images/optimal_bayes_GNB.png" width="70%" /></div>
+
+<h3 id="references"><strong>References</strong></h3>
+<p><br />
+[1] <em>Understanding Machine Learning: from Theory to Algorithms</em>, Shai Ben-David and Shai Shalev-Shwartz</p>
+
+  </div><a class="u-url" href="/machine%20learning/2020/04/26/bayes-optimal-classifier.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Boltzmann Machine | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Boltzmann Machine" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A Boltzmann machine is a type of unsupervised machine learning algorithm that uses a graphical representation, much like a neural network. This architecture expresses the probability distribution in terms of visible and hidden units." />
+<meta property="og:description" content="A Boltzmann machine is a type of unsupervised machine learning algorithm that uses a graphical representation, much like a neural network. This architecture expresses the probability distribution in terms of visible and hidden units." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/12/20/boltzmann-machine.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/12/20/boltzmann-machine.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/bm3.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-12-20T00:00:00+01:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/bm3.png" />
+<meta property="twitter:title" content="Boltzmann Machine" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/12/20/boltzmann-machine.html","image":"http://localhost:4000/bm3.png","headline":"Boltzmann Machine","dateModified":"2020-12-20T00:00:00+01:00","datePublished":"2020-12-20T00:00:00+01:00","description":"A Boltzmann machine is a type of unsupervised machine learning algorithm that uses a graphical representation, much like a neural network. This architecture expresses the probability distribution in terms of visible and hidden units.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/12/20/boltzmann-machine.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Boltzmann Machine</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-12-20T00:00:00+01:00" itemprop="datePublished">
+        Dec 20, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ol>
+  <li><a href="#bm">Boltzmann machine</a></li>
+  <li><a href="#train">Training</a></li>
+  <li><a href="#python">Python implementation</a></li>
+</ol>
+
+<p><a name="bm"></a></p>
+<h3 id="1-boltzmann-machine"><strong>1. Boltzmann Machine</strong></h3>
+
+<p>A Boltzmann machine models an unsupervised probability distribution using a graphical representation composed of visible and hidden units. The visible data’s probability is obtained by summing over the hidden variables, with a weight function, which is the exponential of the energy term \(E(v,h)\), like the Boltzmann distribution in statistical mechanics. For the diagram below</p>
+
+<div style="text-align: center"><img src="/images/bm.png" width="30%" /></div>
+
+<p>the probability has the form</p>
+
+\[P(v)=\sum_{\{h\}}P(v,h)=\sum_{\{h\}}\frac{\exp{E(v,h)}}{Z}=\sum_{\{h\}}\frac{\exp{(-\sum_iv_ia_i-\sum_ih_ib_i-\sum_{i,j}v_iW_{ij}h_j)}}{Z}\]
+
+<p>where the sum is over all hidden configurations \(h=\{0,1\}^d\), with $d$ the dimension of the hidden layer. The parameters $a,b$ are the biases and \(W_{ij}\) is a matrix representing the interactions between the visible and hidden layers. The visible unit is composed of binary features \(v_i=\{0,1\}\). The normalization \(Z\) is the partition function</p>
+
+\[Z(a,b,W)=\sum_{v,h}P(v,h)\]
+
+<p>The Boltzmann machine can have more complicated graph interaction including edges between both visible and hidden units. For example</p>
+<div style="text-align: center"><img src="/images/bm3.png" width="40%" /></div>
+
+<p>A restricted Boltzmann machine is a Boltzmann machine for which there are no interactions between the nodes in the same layer. In terms of parameters, each node $i$ contains a bias \(b_i\), and a parameter \(W_{ij}\) for each edge between the nodes \(i\) and \(j\).</p>
+
+<p><a name="Train"></a></p>
+<h3 id="2-training"><strong>2. Training</strong></h3>
+
+<p>During training, we want to minimize the Kullback-Leibler divergence between the actual distribution of visible data \(D(v)\) and the output of the Boltzmann machine \(P(v)\). That is, we seek the optimum of</p>
+
+\[\begin{equation*}\begin{split}KL(D||P)=\sum_v D(v)\ln\Big(\frac{D(v)}{P(v)}\Big)\end{split}\end{equation*}\]
+
+<p>Lets focus for the moment on a restricted machine with one hidden layer. The derivatives of the loss function 
+\(L\equiv KL(D||P)\) 
+with respect to the weights is</p>
+
+\[\begin{equation}\begin{split}\frac{\partial L}{\partial W_{ij}}&amp;=\sum_v D(v)\frac{\sum_h v_ih_j \exp{E(v,h)}}{\sum_h \exp{E(v,h)}}-\sum_v D(v)\frac{\sum_{v',h'}v'_ih'_j \exp{E(v',h')}}{Z}\\ &amp;=\sum_{v,h} v_ih_j P(h|v)D(v) -\sum_{v,h}v_ih_j P(v,h)\\ &amp;=\langle v_ih_j\rangle_{data}-\langle v_ih_j\rangle_{model}\end{split}\end{equation}\]
+
+<p>and similarly for the biases</p>
+
+\[\begin{equation*}\begin{split}&amp;\frac{\partial L}{\partial a_{i}}=\langle v_i\rangle_{data}-\langle v_i\rangle_{model}\\&amp;\frac{\partial L}{\partial b_{i}}=\langle h_i\rangle_{data}-\langle h_i\rangle_{model}\end{split}\end{equation*}\]
+
+<p>Since the gradient is the sum of two averages, one can use stochastic optimization. To calculate \(\langle hv\rangle_{data}\) 
+we can generate unbiased samples 
+\(h_iv_j\) 
+and then take the average as an estimate. To do that, we can use Gibbs sampling. First we pick a training sample \(v\) and then generate a sample \(h\) using the conditional probability 
+\(P(h_1,h_2,\ldots|v)\)
+. We can write</p>
+
+\[\begin{equation*}\begin{split}P(h_1,h_2,\ldots|v)&amp;=\frac{P(h_1,h_2,\ldots,v)}{\sum_h P(h,v)}=\\
+&amp;=\frac{\exp{(-\sum_j h_jb_j -\sum_{ij}v_iW_{ij}h_j)}}{\prod_{j}(1+\exp{(-b_j-\sum_{i}v_i W_{ij})})}\\
+&amp;=\prod_j\frac{\exp{(-h_jb_j -h_j\sum_{i}v_iW_{ij})}}{(1+\exp{(-b_j-\sum_{i}v_i W_{ij})})}\\
+&amp;=\prod_{j=1}^{N_h} P(h_j|v)\end{split}\end{equation*}\]
+
+<p>where \(N_h\) is the number of hidden units and we have defined</p>
+
+\[P(h_j=1|v)=\frac{1}{1+\exp{(b_i+\sum_i v_iW_{ij})}}\]
+
+<p>Similarly the probability 
+\(P(v_1,v_2,\ldots|h)\) 
+can be written as</p>
+
+\[P(v_1,v_2,\ldots|h)=\prod_{i=1}^{N_v} P(v_i|h)\]
+
+<p>where \(N_v\) is the number of visible units and</p>
+
+\[P(v_i=1|h)=\frac{1}{1+\exp{(a_i+\sum_j W_{ij}h_j)}}\]
+
+<p>The probabilty for visible states can also be written in a compact way. Defining</p>
+
+\[\begin{equation*}\begin{split}\Phi(v)&amp;\equiv\sum_{h}\exp{(-\sum_i v_i a_i-\sum_j h_j b_j-\sum_{ij}v_iW_{ij}h_j)}=\\
+&amp;=\exp{(-\sum_i v_i a_i)}\prod_{j}(1+\exp{(-b_j-\sum_{i}v_i W_{ij})})\end{split}\end{equation*}\]
+
+<p>this probability becomes</p>
+
+\[P(v)=\frac{\Phi(v)}{\sum_v \Phi(v)}\]
+
+<p>However, to generate a sample for the average 
+\(\langle hv\rangle_{model}\) 
+is quite harder because we do not have direct access to \(P(v)\). Instead choose a training vector \(v\) and generate a state \(h\) using \(P(h|v)\). Further, given this state \(h\) reconstruct the state \(v\) using \(P(v|h)\). The change in the weight is then given by</p>
+
+\[\Delta W_{ij}=-\eta( \langle v_ih_j\rangle_{data}-\langle v_ih_j\rangle_{recons})\]
+
+<p>where \(\eta\) is the learning rate.</p>
+
+<p>If the Boltzmann machine contains couplings between nodes in the same layer, the analysis is very similar. We calculate the derivatives of the loss with respect to \(L_{ij}\) and \(J_{ij}\), respectively the couplings between visible-visible and hidden-hidden units,</p>
+
+\[\begin{equation*}\begin{split}&amp;\frac{\partial L}{\partial L_{ij}}=\langle v_iv_j\rangle_{data}-\langle v_iv_j\rangle_{model}\\&amp;\frac{\partial L}{\partial J_{ij}}=\langle h_ih_j\rangle_{data}-\langle h_ih_j\rangle_{model}\end{split}\end{equation*}\]
+
+<p>Again the idea is to replace the model average with a point estimate by generating unbiased samples \(v_iv_j\) and \(h_ih_j\) and calculate their sample averages.</p>
+
+<p>To monitor training, we usually plot values of the log-likelihood function. However, in a Boltzmann machine determining the probability \(P(v)\) is prohibitively expensive since calculating the partition function \(Z\) requires adding up an exponential number of terms. The complexity is of order \(\mathcal{O}(2^{N_v})\), where \(N_v\) is the number of visible units. Instead, we calculate the pseudo-loglikelihood. This quantity is defined as</p>
+
+\[\text{Pseudo-LL}(v)=\sum_{i}\ln P(v_i|\{v_{j\neq i}\})\]
+
+<p>that is, the sum over the log-probabilities conditioned on the remaining visible units. Remember that the log-likelihood can be written as</p>
+
+\[\ln P(v)=\ln P(v_1)+\ln P(v_2|v_1) +\ln P(v_3|v_1,v_2)+\ldots+\ln P(v_n|\{v_{1:n-1}\})\]
+
+<p>after using the Bayes theorem. It can be shown that the pseudo-loglikelihood descreases during training.</p>
+
+<p><a name="python"></a></p>
+<h3 id="3-python-implementation"><strong>3. Python implementation</strong></h3>
+
+<p>We use the MNIST dataset for a python experiment on Boltzmann machines. The dataset consists of 70000 images of handwritten digits, from 0 to 9. Each image contains \(28\times 28=784\) pixels ranging from 0 to 255. If we work with normalized pixels, then we can interpret that value as the probability of being white or black. We can then generate a set of binary states by drawing zeros or ones according to each pixel probability.
+Once the model is trained, we can generate samples of visible states using Gibbs sampling. First, we take a random set of visible states \(v^0\), and then we use \(P(h|v^0)\) to generate a sample of hidden states \(h^0\). Given this hidden state, we can sample a new set of visible states \(v^1\) using \(P(v|h^0)\).</p>
+
+<ul>
+  <li>RBM class</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">RBM</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vis_dim</span><span class="p">,</span><span class="n">hidden_dim</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">vis_dim</span><span class="o">=</span><span class="n">vis_dim</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="o">=</span><span class="n">hidden_dim</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.001</span><span class="p">,(</span><span class="n">vis_dim</span><span class="p">,</span><span class="n">hidden_dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bias_vis</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.001</span><span class="p">,</span><span class="n">vis_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bias_hid</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.001</span><span class="p">,</span><span class="n">hidden_dim</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">prob_h_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vis_vec</span><span class="p">):</span>
+        
+        <span class="n">probs</span><span class="o">=</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bias_hid</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">vis_vec</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">probs</span>
+    
+    <span class="k">def</span> <span class="nf">prob_v_h</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">hid_vec</span><span class="p">):</span>
+        
+        <span class="n">probs</span><span class="o">=</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bias_vis</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">hid_vec</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">T</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="n">probs</span>
+    
+    <span class="k">def</span> <span class="nf">Pv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vis_vec</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">Z</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__phi</span><span class="p">(</span><span class="n">vis_vec</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="p">.</span><span class="n">Z_</span>
+        
+        <span class="k">return</span> <span class="n">p</span>
+    
+    <span class="k">def</span> <span class="nf">__phi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vis_vec</span><span class="p">):</span>
+        
+        <span class="n">p</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">vis_vec</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">bias_vis</span><span class="p">))</span>
+        <span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">bias_hid</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">vis_vec</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">))</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">p</span>
+    
+    <span class="k">def</span> <span class="nf">pseudoLL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+        
+        <span class="n">phis</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__phi</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">pseudo</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">temp</span><span class="o">=</span><span class="n">X</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="c1">#flip
+</span>            <span class="n">temp</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Z</span><span class="o">=</span><span class="n">phis</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">__phi</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+            <span class="n">pseudo</span><span class="o">+=</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">phis</span><span class="o">/</span><span class="n">Z</span><span class="p">)</span>
+            <span class="c1">#flip again
+</span>            <span class="n">temp</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="o">-</span><span class="n">pseudo</span>
+        
+    <span class="k">def</span> <span class="nf">Z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
+        <span class="n">vis_rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">vis_dim</span><span class="p">)</span>
+        <span class="n">vis</span><span class="o">=</span><span class="p">(</span><span class="n">vis_rand</span><span class="o">&lt;=</span><span class="mf">0.5</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">Z_</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">__phi</span><span class="p">(</span><span class="n">vis</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">gibbs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="n">vec</span><span class="o">=</span><span class="n">X</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">prob_hid</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">prob_h_v</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+            <span class="n">rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">vec</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+            <span class="n">hid_vec</span><span class="o">=</span><span class="p">(</span><span class="n">rand</span><span class="o">&lt;=</span><span class="n">prob_hid</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+            <span class="n">prob_vis</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">prob_v_h</span><span class="p">(</span><span class="n">hid_vec</span><span class="p">)</span>
+            <span class="n">rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">vec</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">vis_dim</span><span class="p">)</span>
+            <span class="n">vec</span><span class="o">=</span><span class="p">(</span><span class="n">rand</span><span class="o">&lt;=</span><span class="n">prob_vis</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vec</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Log-Loss class</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LogLoss</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="o">=</span><span class="n">model</span>
+        
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">pseudo</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">pseudoLL</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">pseudo</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>       
+</code></pre></div></div>
+
+<ul>
+  <li>Optimizer class</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Optimizer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">,</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="o">=</span><span class="n">model</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span>
+        
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vis_batch</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        
+        <span class="n">hid_prob</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">prob_h_v</span><span class="p">(</span><span class="n">vis_batch</span><span class="p">)</span>
+        <span class="n">hid_rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+        <span class="n">hid_data</span><span class="o">=</span><span class="p">(</span><span class="n">hid_rand</span><span class="o">&lt;=</span><span class="n">hid_prob</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+        
+        <span class="n">vis_model</span><span class="o">=</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">hid_prob</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">prob_h_v</span><span class="p">(</span><span class="n">vis_model</span><span class="p">)</span>
+            <span class="n">hid_rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+            <span class="n">hid_model</span><span class="o">=</span><span class="p">(</span><span class="n">hid_rand</span><span class="o">&lt;=</span><span class="n">hid_prob</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+        
+            <span class="n">vis_prob</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">prob_v_h</span><span class="p">(</span><span class="n">hid_model</span><span class="p">)</span>
+            <span class="n">vis_rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">vis_dim</span><span class="p">)</span>
+            <span class="n">vis_model</span><span class="o">=</span><span class="p">(</span><span class="n">vis_rand</span><span class="o">&lt;=</span><span class="n">vis_prob</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+        
+        <span class="n">hv_data</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">T</span><span class="p">,</span><span class="n">hid_data</span><span class="p">)</span>
+        <span class="n">hv_data</span><span class="o">=</span><span class="n">hv_data</span><span class="o">/</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">hv_model</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">vis_model</span><span class="p">.</span><span class="n">T</span><span class="p">,</span><span class="n">hid_model</span><span class="p">)</span>
+        <span class="n">hv_model</span><span class="o">=</span><span class="n">hv_model</span><span class="o">/</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">weight</span><span class="o">-=</span><span class="bp">self</span><span class="p">.</span><span class="n">lr</span><span class="o">*</span><span class="p">(</span><span class="n">hv_data</span><span class="o">-</span><span class="n">hv_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">bias_vis</span><span class="o">-=</span><span class="bp">self</span><span class="p">.</span><span class="n">lr</span><span class="o">*</span><span class="p">(</span><span class="n">vis_batch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">-</span><span class="n">vis_model</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">bias_hid</span><span class="o">-=</span><span class="bp">self</span><span class="p">.</span><span class="n">lr</span><span class="o">*</span><span class="p">(</span><span class="n">hid_data</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">-</span><span class="n">hid_model</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Data preparation</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#Make visible units out of pixels
+</span><span class="k">class</span> <span class="nc">VisibleGen</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">,</span><span class="n">norm</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="o">=</span><span class="n">data</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm</span><span class="o">=</span><span class="n">norm</span>
+        
+    <span class="k">def</span> <span class="nf">make_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="o">/</span><span class="bp">self</span><span class="p">.</span><span class="n">norm</span>
+        <span class="n">rand</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">visible</span><span class="o">=</span><span class="p">(</span><span class="n">rand</span><span class="o">&lt;=</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int'</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">visible</span>
+
+<span class="c1"># Data-loader creates mini-batches of data
+</span><span class="k">class</span> <span class="nc">DataLoader</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="o">=</span><span class="n">X</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">L</span><span class="o">=</span><span class="n">X</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">size</span><span class="o">=</span><span class="n">batch_size</span>
+    
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">L</span>
+    
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">L</span><span class="o">%</span><span class="bp">self</span><span class="p">.</span><span class="n">size</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">L</span><span class="o">//</span><span class="bp">self</span><span class="p">.</span><span class="n">size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">L</span><span class="o">//</span><span class="bp">self</span><span class="p">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span>
+            
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">j</span><span class="o">=</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">size</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">size</span><span class="p">]</span>
+</code></pre></div></div>
+<ul>
+  <li>Training function</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">data_loader</span><span class="p">,</span><span class="n">optimizer</span><span class="p">,</span><span class="n">loss</span><span class="p">,</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="n">total_loss</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+            <span class="n">L</span><span class="o">=</span><span class="n">loss</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+            <span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+            <span class="n">total_loss</span><span class="o">+=</span><span class="n">L</span>
+        <span class="n">total_loss</span><span class="o">=</span><span class="n">total_loss</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">data_loader</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'epoch: '</span><span class="p">,</span><span class="n">epoch</span><span class="p">,</span><span class="s">', Loss: '</span><span class="p">,</span><span class="n">total_loss</span><span class="p">)</span>
+</code></pre></div></div>
+<p>We generate visible units from a sample of the MNIST data.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">idx</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">mnist_28x28</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">sample</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">sample_img</span><span class="o">=</span><span class="n">mnist_28x28</span><span class="p">[</span><span class="n">sample</span><span class="p">]</span>
+
+<span class="n">vis_28x28</span><span class="o">=</span><span class="n">VisibleGen</span><span class="p">(</span><span class="n">sample_img</span><span class="p">,</span><span class="mi">255</span><span class="p">)</span>
+<span class="n">vis_28x28_data</span><span class="o">=</span><span class="n">vis_28x28</span><span class="p">.</span><span class="n">make_visible</span><span class="p">()</span>
+<span class="n">vis_28x28_loader</span><span class="o">=</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">vis_28x28_data</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We create a RBM with 100 hidden units and use a learning rate=0.01.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">rbm_28x28</span><span class="o">=</span><span class="n">RBM</span><span class="p">(</span><span class="mi">784</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">loss</span><span class="o">=</span><span class="n">LogLoss</span><span class="p">(</span><span class="n">rbm_28x28</span><span class="p">)</span>
+<span class="n">opt</span><span class="o">=</span><span class="n">Optimizer</span><span class="p">(</span><span class="n">rbm_28x28</span><span class="p">,</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</code></pre></div></div>
+<p>The first 10 epochs of training</p>
+<div style="text-align: center"><img src="/images/rbm_losses.png" width="70%" /></div>
+<p>we can see that the pseudo-loss decreases steadily.</p>
+
+<p>Once the model is trained we can generate samples using a Gibbs sampler that is built in the RBM class.
+After 10 epochs:</p>
+
+<div style="text-align: center"><img src="/images/rbm_train_10.png" width="80%" /></div>
+
+<p>After 20 epochs:</p>
+
+<div style="text-align: center"><img src="/images/rbm_train_20.png" width="80%" /></div>
+
+<p>And finally after 40 epochs:</p>
+
+<div style="text-align: center"><img src="/images/rbm_train_40.png" width="80%" /></div>
+
+<p>We see that with longer training the generated samples show more differentiation.</p>
+
+<h3 id="references"><strong>References</strong></h3>
+<p><br /></p>
+
+<p>[1] <em>A Practical Guide to Training Restricted Boltzmann Machines</em>, G. Hinton, (2010)</p>
+
+<p>[2] <em>An Efficient Learning Procedure for Deep Boltzmann Machines</em>, G. Hinton, R. Salakhutdinov (2012)</p>
+
+<p>[3] <em>Deep Learning</em>, A. Courville, I. Goodfellow, Y. Bengio, (book)</p>
+
+  </div><a class="u-url" href="/machine%20learning/2020/12/20/boltzmann-machine.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

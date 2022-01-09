@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Clustering K-Means | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Clustering K-Means" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Kmeans clustering is a learning algorithm whereby datapoints are clustered in an unsupervised manner." />
+<meta property="og:description" content="Kmeans clustering is a learning algorithm whereby datapoints are clustered in an unsupervised manner." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2021/09/24/clustering.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2021/09/24/clustering.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/clusters_pred.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-09-24T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/clusters_pred.png" />
+<meta property="twitter:title" content="Clustering K-Means" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2021/09/24/clustering.html","image":"http://localhost:4000/clusters_pred.png","headline":"Clustering K-Means","dateModified":"2021-09-24T00:00:00+02:00","datePublished":"2021-09-24T00:00:00+02:00","description":"Kmeans clustering is a learning algorithm whereby datapoints are clustered in an unsupervised manner.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2021/09/24/clustering.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Clustering K-Means</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2021-09-24T00:00:00+02:00" itemprop="datePublished">
+        Sep 24, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="kmeans-algorithm">Kmeans algorithm</h3>
+
+<p>Kmeans clustering is an unsupervised machine learning algorithm. Given a set of data-points and the number of clusters the algorithm assigns each point to a particular cluster. The algorithm works iteratively starting from N randomly assigned cluster positions, and subsequently changing the positions until convergence is achieved.</p>
+
+<p>The algorithm follows the steps:</p>
+
+<ol>
+  <li>Choose random positions for the clusters;</li>
+  <li>For each data-point determine the closest cluster;</li>
+  <li>Calculate the center-of-mass for each group, which is now the new cluster center position;</li>
+  <li>Loop through 2,3 until a certain degree of convergence is achieved.</li>
+</ol>
+
+<div style="text-align: center"><img src="/blog-data-science/images/kmeans.png" width="40%" /></div>
+
+<p>In the picture above, $p1$ represents the initial cluster position and $p2$ is center-of-mass. The algorithm continues until the change in the cluster positions is within a certain margin of error, indicating that it has converged.</p>
+
+<p>The problem can be formulated as follows:</p>
+<ul>
+  <li>Find cluster positions $c_1,c_2\ldots,c_N$ and labels $l$ such that we minimize</li>
+</ul>
+
+\[D=\sum_{l=1}^N \sum_{\substack{i=1\\ x\in \text{cluster}:l}}^{N_l}|x^i_l-c_l|^2\]
+
+<p>Here, $N_l$ is the number of data-points in cluster $l$. The algorithm depends strongly on the initial positions and it is not guaranteed that it will achieve a global optimum. Step 2 of the algorithm consists in atributing labels $l$ for the data-points $x$ such that $D$ is minimized given the centers of the clusters $c_l$. In step 3, we minimize with respect to the center positions $c_l$, that is,</p>
+
+\[\begin{equation}\begin{split}
+&amp;\frac{\partial D}{\partial c_l}=\sum_{x\in \text{cluster: }l}(x_l-c_l)=0\\
+&amp;\Leftrightarrow c_l=\frac{1}{N_l}\sum_{x\in \text{cluster: }l} x_l
+\end{split}\end{equation}\]
+
+<h3 id="statistical-point-of-view">Statistical point of view</h3>
+
+<p>Consider the mixture gaussian model:</p>
+
+\[\begin{equation}\begin{split}
+&amp;P(x|c)=\frac{1}{\sigma_c\sqrt{2\pi}}\exp{-\frac{(x-x_c)^2}{2\sigma_c^2}} \\
+&amp;P(c)=\frac{1}{N}
+\end{split}\end{equation}\]
+
+<p>The probability $P(x)$ is</p>
+
+\[P(x)=\sum_c P(x|c)P(c)=\sum_c\frac{1}{N\sigma_c\sqrt{2\pi}}\exp{-\frac{|x-x_c|^2}{2\sigma_c^2}}\]
+
+<p>We want to use maximum-likelihood estimation to determine the centers $x_c$. Therefore, we want to maximize the likelihood:</p>
+
+\[L=\sum_{x^i}\ln P(x^i)\]
+
+<p>This is can be hard to solve because $P(x)$ contains a sum over multiple terms. However, we can approximate $P(x^i)$ by the cluster $c(i)$ that is closer to $x^i$, that is,</p>
+
+\[P(x^i)\simeq \frac{1}{N\sigma_c\sqrt{2\pi}}\exp{-\frac{|x^i-x_{c(i)}|^2}{2\sigma_c^2}}\]
+
+<p>The approximation is valid provided there is a clear separation between the clusters, so the clusters different from $c(i)$ have exponentially suppressed contributions. That is, we need</p>
+
+\[\frac{|x^i-x_{c(i)}|^2}{\sigma_{c(i)}}\ll \frac{|x^i-x_{c'}|^2}{\sigma_{c'}},\;c(i)\neq c'\]
+
+<p>then the likelihood function is:</p>
+
+\[L=\sum_{x^i}\ln P(x^i)\simeq -\frac{1}{2\sigma_{c(i)}^2}\sum_{x^i} |x^i-x_{c(i)}|^2\]
+
+<p>Maximizing $L$ is equivalent to minimizing:</p>
+
+\[\sum_{x^i} \frac{1}{\sigma_{c(i)}^2}|x^i-x_{c(i)}|^2=\sum_{c} \frac{1}{\sigma_{c(i)}^2}\sum_{x\in \text{cluster}}|x^i-x_{c(i)}|^2\]
+
+<p>Provided all the clusters have the same variance $\sigma_c=\sigma$, we recover the kmeans algorithm.</p>
+<h3 id="python-implementation">Python Implementation</h3>
+
+<p>The Python code is:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Kmeans</span><span class="p">:</span>
+    <span class="s">"""
+    KMeans algorithm:
+    * initialization: assigns random positions to clusters given mean
+    and standard deviation of data
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">epsilon</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span>
+        <span class="c1"># position centers for each iteration
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">centers_pos</span><span class="o">=</span><span class="p">[]</span>
+        <span class="c1"># centers positions: clusters_centers[i]=(x,y) for center i
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span><span class="o">=</span><span class="bp">None</span>
+        
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">std_dev</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1">#pick N random data-points
+</span>        <span class="n">idx</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="bp">self</span><span class="p">.</span><span class="n">n_clusters</span><span class="p">,</span><span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="c1">#initialize center positions
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">+</span><span class="n">std_dev</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">clusters</span><span class="o">=</span><span class="p">[]</span>
+        
+        <span class="n">not_converged</span><span class="o">=</span><span class="bp">True</span>
+        <span class="k">while</span> <span class="n">not_converged</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">centers_pos</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span><span class="p">)</span>
+            <span class="c1"># calculate new
+</span>            <span class="n">new_centers</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">newpos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">dev</span><span class="o">=</span><span class="n">new_centers</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span><span class="o">=</span><span class="n">new_centers</span>
+            <span class="n">dev</span><span class="o">=</span><span class="p">(</span><span class="n">dev</span><span class="o">*</span><span class="n">dev</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">dev</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">dev</span><span class="o">&gt;=</span><span class="bp">self</span><span class="p">.</span><span class="n">epsilon</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">not_converged</span><span class="o">=</span><span class="bp">False</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">'Converged'</span><span class="p">)</span>
+    
+    <span class="c1">#determine new means given clusters
+</span>    <span class="k">def</span> <span class="nf">newpos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">distances</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">x_cl</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span><span class="p">:</span>
+            <span class="n">d</span><span class="o">=</span><span class="n">x</span><span class="o">-</span><span class="n">x_cl</span>
+            <span class="n">d</span><span class="o">=</span><span class="p">(</span><span class="n">d</span><span class="o">*</span><span class="n">d</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">distances</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">distances</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">clusters</span><span class="o">=</span><span class="n">distances</span><span class="p">.</span><span class="n">argmin</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1">#re-evaluate cluster centers
+</span>        <span class="n">centers</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">clusters_centers</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">n_clusters</span><span class="p">):</span>
+            <span class="n">idx</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clusters</span><span class="o">==</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_center</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">centers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">new_center</span>
+        
+        <span class="k">return</span> <span class="n">centers</span>
+</code></pre></div></div>
+
+<p>Then we generate data as:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">N</span><span class="o">=</span><span class="mi">4</span> <span class="c1">#number of clusters
+</span><span class="n">centers</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">,(</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">xs</span><span class="o">=</span><span class="p">[]</span>
+<span class="n">xcenters</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="o">*</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)):</span>
+    <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="n">c</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">c</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">xcenters</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">100</span><span class="p">:</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),:]</span><span class="o">=</span><span class="n">c</span>
+    <span class="n">xs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">xs_all</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
+</code></pre></div></div>
+<p>that is,</p>
+
+<div style="text-align: center"><img src="/blog-data-science/images/clusters.png" width="70%" /></div>
+
+<p>To solve the problem instantiate the object and run fit method:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">km</span><span class="o">=</span><span class="n">Kmeans</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">km</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xs_all</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div style="text-align: center"><img src="/blog-data-science/images/clusters_pred.png" width="70%" /></div>
+
+<p>The dark crosses represent the solution of the k-means algorithm. We can keep track of the iterations:</p>
+
+<div style="text-align: center"><img src="/blog-data-science/images/kmeans_iterations.png" width="70%" /></div>
+
+<p>The larger circle represents the initial position, and subsequent smaller circles are the intermediate positions until convergence.</p>
+
+  </div><a class="u-url" href="/machine%20learning/2021/09/24/clustering.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

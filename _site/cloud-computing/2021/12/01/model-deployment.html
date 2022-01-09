@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Model Deployment with AWS Sagemaker | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Model Deployment with AWS Sagemaker" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Deploy custom model in AWS Sagemaker using containers." />
+<meta property="og:description" content="Deploy custom model in AWS Sagemaker using containers." />
+<link rel="canonical" href="http://localhost:4000/cloud-computing/2021/12/01/model-deployment.html" />
+<meta property="og:url" content="http://localhost:4000/cloud-computing/2021/12/01/model-deployment.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-12-01T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Model Deployment with AWS Sagemaker" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/cloud-computing/2021/12/01/model-deployment.html","headline":"Model Deployment with AWS Sagemaker","dateModified":"2021-12-01T00:00:00+01:00","datePublished":"2021-12-01T00:00:00+01:00","description":"Deploy custom model in AWS Sagemaker using containers.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/cloud-computing/2021/12/01/model-deployment.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Model Deployment with AWS Sagemaker</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2021-12-01T00:00:00+01:00" itemprop="datePublished">
+        Dec 1, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="write-custom-container">Write custom Container</h3>
+
+<p>We can deploy our model in AWS Sagemaker using a custom container. We create a folder ‘/opt/program’ inside the container where we store the files:</p>
+<ul>
+  <li>serve: starts the server API</li>
+  <li>predictor.py: defines Flask REST API</li>
+</ul>
+
+<p>When Sagemaker runs the container it starts the CMD “serve”, which deploys the REST API. The file</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>predictor.py
+</code></pre></div></div>
+<p>loads the pickled model and implements a Flask API with two methods that Sagemaker expects:</p>
+<ul>
+  <li>[GET] /ping</li>
+  <li>[POST] /invocations</li>
+</ul>
+
+<p>The pickled model can be copied directly to the container to a folder of choice. Or it can be stored in a S3 bucket and passed on to Sagemaker as an artifact. Sagemaker then extracts the tar.gz file from S3 and copies it to the folder ‘/opt/ml/model’. Therefore, if we pass the model as an artifact, the predictor module needs to unpickle the file at ‘/opt/ml/model’.</p>
+
+<p>The Dockerfile has the basic structure:</p>
+<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> ubuntu:latest</span>
+
+<span class="k">RUN </span>apt-get <span class="nt">-y</span> update <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-y</span> <span class="nt">--no-install-recommends</span> <span class="se">\
+</span>         wget <span class="se">\
+</span>         python3 <span class="se">\
+</span>         python3-pip<span class="se">\
+</span>         nginx <span class="se">\
+</span>         ca-certificates <span class="se">\
+</span>    <span class="o">&amp;&amp;</span> <span class="nb">rm</span> <span class="nt">-rf</span> /var/lib/apt/lists/<span class="k">*</span>
+
+<span class="c">#Install python libraries</span>
+<span class="k">COPY</span><span class="s"> requirements.txt /opt/program/</span>
+<span class="k">RUN </span>python3 <span class="nt">-m</span> pip <span class="nb">install</span> /opt/prorgam/requirements.txt <span class="o">&amp;&amp;</span> <span class="se">\
+</span>        <span class="nb">rm</span> <span class="nt">-rf</span> /root/.cache
+
+<span class="k">ENV</span><span class="s"> PYTHONUNBUFFERED=TRUE</span>
+<span class="k">ENV</span><span class="s"> PYTHONDONTWRITEBYTECODE=TRUE</span>
+<span class="k">ENV</span><span class="s"> PATH="/opt/program:${PATH}"</span>
+
+<span class="c">#copy model to /opt/ml/model or other folder</span>
+<span class="k">COPY</span><span class="s"> model.pkl /opt/ml/model/</span>
+<span class="c"># Set up the program in the image</span>
+<span class="k">COPY</span><span class="s"> model-files /opt/program</span>
+<span class="k">WORKDIR</span><span class="s"> /opt/program</span>
+<span class="k">RUN </span><span class="nb">chmod</span> +x serve
+
+<span class="k">CMD</span><span class="s"> [ "serve" ]</span>
+</code></pre></div></div>
+
+<p>We can run the container locally and test the API:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#build model</span>
+docker build <span class="nt">-t</span> sagemaker-model <span class="nb">.</span>
+<span class="c">#run the container</span>
+docker run <span class="nt">-p</span> 8080:8080 sagemaker-model:latest 
+</code></pre></div></div>
+
+<p>Now we can access the API at 127.0.0.1:8080:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">--location</span> <span class="nt">--request</span> POST <span class="s1">'http://localhost:8080/invocations'</span> <span class="se">\</span>
+<span class="nt">--header</span> <span class="s1">'Content-Type: application/json'</span> <span class="se">\</span>
+<span class="nt">--data-raw</span> <span class="s1">'{"data": [[1,2],[3,4],[3,3],[10,1],[7,8]]}'</span>
+</code></pre></div></div>
+
+<h3 id="sagemaker-deployment">Sagemaker Deployment</h3>
+
+<p>First we need to push our docker image to our AWS ECR repository. Assuming that we have already created a repository with URI: “aws_account_id”.dkr.ecr.”region”.amazonaws.com/”name-model”, we tag the docker image using the same repository URI, that is,</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker tag sagemaker-model:latest <span class="s2">"aws_account_id"</span>.dkr.ecr.<span class="s2">"region"</span>.amazonaws.com/sagemaker-model:latest
+</code></pre></div></div>
+<p>and then push to the ECR repository (it presupposes that one has logged in)</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker push <span class="s2">"aws_account_id"</span>.dkr.ecr.<span class="s2">"region"</span>.amazonaws.com/model-sagemaker:latest
+</code></pre></div></div>
+
+<p>Now that we have uploaded the docker image we can go to Sagemaker section and create a Model, an Endpoint Configuration and finaly deploy the model to an Endpoint.</p>
+
+<h4 id="create-model"><strong>Create Model</strong></h4>
+<p>We give it a name</p>
+<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_model_step.png" width="80%" /></div>
+<p>then we choose to “Provide model artifacts and image location” since we want to use our container</p>
+<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_model_step2.png" width="80%" /></div>
+<p>and last we choose “single model” and then write the URI of the docker image. Since our container already has the pickled model we do not need to write anything in the box “Location of model artifacts”</p>
+<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_model_step3.png" width="80%" /></div>
+
+<h4 id="endpoint-configuration"><strong>Endpoint-Configuration</strong></h4>
+
+<p>We give it a name and then choose the model that we have created in previous step. At this point we need to choose the EC2 instance that will run the container.</p>
+<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployement_endpntconfig.png" width="80%" /></div>
+
+<h4 id="endpoint"><strong>Endpoint</strong></h4>
+
+<p>Give a name to the endpoint and then choose an existing endpoint-configuration, the one we have previously created:</p>
+<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_endpoint.png" width="80%" /></div>
+<p>Then choose “Create Endpoint”.</p>
+
+<h3 id="access-endpoint">Access Endpoint</h3>
+
+<p>Now that the model is deployed and the endpoint is in “Service”, we build an API to call the container endpoint. There are essentially two ways of doing this:</p>
+
+<p>1) We can invoke the Sagemaker endpoint directly. For this we need to create a role with permission to invoke the sagemaker endpoint.</p>
+
+<p>2) Create a REST API Gateway with a Lambda to call the Sagemaker Endpoint.</p>
+
+<h4 id="1-invoke-sagemaker-directly">1. Invoke Sagemaker directly</h4>
+
+<p>In this case the AWS user must have the permission to invoke the sagemaker endpoint. Then we need the credentials <strong>Access_Key_id</strong> and <strong>Secret_access_key</strong> of this user. In Postman the request looks like</p>
+<div style="text-align: center"><img src="/blog-data-science/images/postman_access_endpoint.png" width="100%" /></div>
+
+  </div><a class="u-url" href="/cloud-computing/2021/12/01/model-deployment.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

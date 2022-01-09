@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Linear regression classifier | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Linear regression classifier" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We explain the basics of linear regression and classification." />
+<meta property="og:description" content="We explain the basics of linear regression and classification." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/06/20/linear_regression.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/06/20/linear_regression.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:image" content="http://localhost:4000/lr_3classes.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-06-20T00:00:00+02:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/lr_3classes.png" />
+<meta property="twitter:title" content="Linear regression classifier" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/06/20/linear_regression.html","image":"http://localhost:4000/lr_3classes.png","headline":"Linear regression classifier","dateModified":"2020-06-20T00:00:00+02:00","datePublished":"2020-06-20T00:00:00+02:00","description":"We explain the basics of linear regression and classification.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/06/20/linear_regression.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Linear regression classifier</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-06-20T00:00:00+02:00" itemprop="datePublished">
+        Jun 20, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#1-linear-regression-and-classification"><strong>1. Linear regression and classification</strong></a></li>
+  <li><a href="#2-python-implementation"><strong>2. Python implementation</strong></a></li>
+</ul>
+
+<p><a name="def1"></a></p>
+<h3 id="1-linear-regression-and-classification"><strong>1. Linear regression and classification</strong></h3>
+
+<p>Suppose we have a dataset with n features and k classes. We want to fit an hyperplane. For that purpose we write the target variable $y$ in a one-hot-encoded way, that is, as a vector $y_k$ with only one entry equal to one and $k-1$ others equal zero, and fit:</p>
+
+\[y^k\sim w^k_{\mu}x^{\mu}+w^k_0\]
+
+<p>where $\mu$ is the feature dimension and $w^k_0$ is the bias. Next we consider the mean square loss:</p>
+
+\[L=\frac{1}{m}\sum_{i=1}^{m}||(y^k_i-w^k_{\mu}x^{\mu}_i-w^k_0)||^2\]
+
+<p>and find its minima, that is,</p>
+
+\[\begin{equation*}\begin{split}&amp;\frac{\partial L}{\partial w^k_{\mu}}=-\frac{2}{m}\sum_{i=1}^{m}(y^k_i-w^k_{\nu}x^{\nu}_i-w^k_0)x^{\mu}_i=0\\
+&amp;\frac{\partial L}{\partial w^k_{0}}=-\frac{2}{m}\sum_{i=1}^{m}(y^k_i-w^k_{\mu}x^{\mu}_i-w^k_0)=0
+\end{split}\end{equation*}\]
+
+<p>Alternatively</p>
+
+\[\begin{equation*}\begin{split}&amp; \langle y^kx^{\mu}\rangle-w^k_{\nu}\langle x^{\nu}x^{\mu}\rangle -w^k_0\langle x^{\mu}\rangle=0\\
+&amp;\langle y^k\rangle-w^k_{\mu}\langle x^u\rangle-w^k_0=0
+\end{split}\end{equation*}\]
+
+<p>It is best to write $w^k_a=(w^k_{\mu},w^k_0)$ and $x^{a}=(x^{\mu},1)$, so that the equations for $w^k_{\mu}$ and the bias merge into a single equation:</p>
+
+\[\langle y^kx^{a}\rangle-w^k_{b}\langle x^{b}x^{a}\rangle=0\]
+
+<p>The solution is</p>
+
+\[w=Y^{T}X(X^{T}X)^{-1}\]
+
+<p>where $Y=y_{ik}$ and $X=x_{ia}$. The predictor becomes:</p>
+
+\[\hat{Y}\equiv Xw^T=X(X^TX)^{-1}X^TY\]
+
+<p>When is it guaranteed that there exists a solution? Or in other words, when is $X^TX$ invertible? We need to look at the vector space spanned by the columns of $X$, that is, $\text{Span}={v_a\equiv X_{ia}}$. If the dimension of this vector space is less than the number of features, then some of the vectors $v_a$ are not linearly independent, and thus the matrix $X^TX$ will have determinant zero. Or in other words, there are coefficients $c_a$ such that $\sum_ac_av_a=0$, which means that $Xc=0$ and thus $X^TXc=0$. If there are many data points as compared to the number of features, it becomes harder to find linearly dependent vectors $v_a$.</p>
+
+<p>Note that</p>
+
+<p>\(X^TX \Big[\begin{array}{c}
+   0_{\mu}  \\
+   1  \\
+  \end{array} \Big]_{a\times 1}=N\Big[\begin{array}{c}
+   \langle x^{\mu}\rangle  \\
+   1  \\
+  \end{array} \Big]_{a\times 1}\) 
+  and therefore
+  \(X(X^TX)^{-1}X^TY \Big[\begin{array}{c}
+   1_{k} 
+  \end{array}\Big]_{k\times 1}=\Big[\begin{array}{c}
+   1_{i} 
+  \end{array}\Big]_{i\times 1}\)</p>
+
+<p>that is, the predictions $\hat{Y}_i$ sum up to one just like a probability. However, it is not guaranteed that $\hat{Y}$ is always positive. To predict the class of a datapoint we use the rule:</p>
+
+\[k=\text{argmax}_{k'}\hat{Y}(x)\]
+
+<p>We can work out in more detail the inverse matrix $(X^TX)^{-1}$.</p>
+
+\[X^TX=N\Big[\begin{array}{cc}
+   \langle x^{\mu}x^{\nu}\rangle &amp; \langle x^{\mu}\rangle\\
+   \langle x^{\nu}\rangle &amp; 1
+  \end{array}\Big]\]
+
+<p>where $N$ is the number of datapoints. Now we use the result</p>
+
+\[\Big[\begin{array}{cc}
+   A_{ij} &amp; v_i\\
+   v_j &amp; 1
+  \end{array}\Big]^{-1}=\Big[\begin{array}{cc}
+   A^{-1}+\frac{A^{-1}vv^TA^{-1}}{(1-v^TA^{-1}v)} &amp; -\frac{A^{-1}v}{(1-v^TA^{-1}v)}\\
+   -\frac{v^TA^{-1}}{(1-v^TA^{-1}v)} &amp; \frac{1}{(1-v^TA^{-1}v)}
+  \end{array}\Big]\]
+
+<p>to find that</p>
+
+\[(X^TX)^{-1}=N^{-1}\Big[\begin{array}{cc}
+   \text{Var}^{-1}_{\mu\nu} &amp; -\sum_{\nu}\text{Var}^{-1}_{\mu\nu}\langle x^{\nu}\rangle\\
+    -\sum_{\mu}\langle x^{\mu}\rangle\text{Var}^{-1}_{\mu\nu}&amp; 1+\sum_{\mu\nu}\langle x^{\mu}\rangle\text{Var}^{-1}_{\mu\nu}\langle x^{\nu}\rangle
+  \end{array}\Big]\]
+
+<p>where</p>
+
+\[\text{Var}_{\mu\nu}=\langle x^{\mu}x^{\nu}\rangle-\langle x^{\mu}\rangle \langle x^{\nu}\rangle\]
+
+<p>is the variance matrix. On the other hand, the weight matrix $w^T$ becomes</p>
+
+\[\Big[\begin{array}{cc}
+   \text{Var}^{-1}_{\mu\nu} &amp; -\sum_{\nu}\text{Var}^{-1}_{\mu\nu}\langle x^{\nu}\rangle\\
+    -\sum_{\mu}\langle x^{\mu}\rangle\text{Var}^{-1}_{\mu\nu}&amp; 1+\sum_{\mu\nu}\langle x^{\mu}\rangle\text{Var}^{-1}_{\mu\nu}\langle x^{\nu}\rangle
+  \end{array}\Big] \Big[\begin{array}{c}
+   \langle x^{\nu}y^k\rangle\\
+   \langle y^k \rangle
+  \end{array}\Big]\]
+
+<p>Lets see how this works in practice. We build artificial data using the normal distribution in two dimensions. We consider first the case with two classes and later the multi-class case.</p>
+
+<div style="text-align: center"><img src="/images/lr_2classes.png" width="60%" /></div>
+
+<p>One can see that despite a very simple model the linear classifier can separate very clearly all the points. The trouble happens with more classes. Consider now the case with three classes.</p>
+
+<div style="text-align: center"><img src="/images/lr_3classes.png" width="60%" /></div>
+
+<p>We see that the linear model cannot differentiate between classes $0/1$ and $1/2$, as the decision boundaries almost overlap.</p>
+
+<p><a name="python"></a></p>
+<h3 id="2-python-implementation"><strong>2. Python implementation</strong></h3>
+
+<p>Create data (three classes)</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">L</span><span class="o">=</span><span class="mi">1000</span>
+<span class="n">n1</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span><span class="n">L</span><span class="p">)</span>
+<span class="n">n2</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">],[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span><span class="n">L</span><span class="p">)</span>
+<span class="n">n3</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">],[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span><span class="n">L</span><span class="p">)</span>
+
+<span class="n">n1</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">n1</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="nb">int</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">n2</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">n2</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">((</span><span class="n">L</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="nb">int</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">n3</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">n3</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">((</span><span class="n">L</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="nb">int</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">n</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">n1</span><span class="p">,</span><span class="n">n2</span><span class="p">,</span><span class="n">n3</span><span class="p">])</span>
+<span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">'x'</span><span class="p">,</span><span class="s">'y'</span><span class="p">,</span><span class="s">'target'</span><span class="p">])</span>
+
+</code></pre></div></div>
+<p>Regression:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span>
+
+<span class="c1">#One-hot-encoding
+</span><span class="n">enc</span><span class="o">=</span><span class="n">OneHotEncoder</span><span class="p">()</span>
+<span class="n">Y</span><span class="o">=</span><span class="n">enc</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">'target'</span><span class="p">].</span><span class="n">values</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">lr</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">lr</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[[</span><span class="s">'x'</span><span class="p">,</span><span class="s">'y'</span><span class="p">]],</span><span class="n">Y</span><span class="p">.</span><span class="n">toarray</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>Decision boundary:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">decision</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="o">=</span><span class="n">model</span>
+    
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">cl1</span><span class="p">,</span><span class="n">cl2</span><span class="p">):</span>
+        <span class="n">a</span><span class="o">=-</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">cl1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">cl2</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">cl1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">cl2</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">b</span><span class="o">=-</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">intercept_</span><span class="p">[</span><span class="n">cl1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">intercept_</span><span class="p">[</span><span class="n">cl2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">cl1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">cl2</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">x</span><span class="o">+</span><span class="n">b</span>
+
+<span class="n">lr_bnd</span><span class="o">=</span><span class="n">decision</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+
+<span class="c1">#draw line from (p1[0],p2[0]) to (p1[1],p2[1]), and so on
+</span><span class="n">p1</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">12</span><span class="p">]</span>
+<span class="n">p2</span><span class="o">=</span><span class="p">[</span><span class="n">lr_bnd</span><span class="p">(</span><span class="n">p1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">lr_bnd</span><span class="p">(</span><span class="n">p1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+
+<span class="n">p3</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">12</span><span class="p">]</span>
+<span class="n">p4</span><span class="o">=</span><span class="p">[</span><span class="n">lr_bnd</span><span class="p">(</span><span class="n">p3</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">lr_bnd</span><span class="p">(</span><span class="n">p3</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span>
+
+<span class="n">p5</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">12</span><span class="p">]</span>
+<span class="n">p6</span><span class="o">=</span><span class="p">[</span><span class="n">lr_bnd</span><span class="p">(</span><span class="n">p5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">lr_bnd</span><span class="p">(</span><span class="n">p5</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span>
+</code></pre></div></div>
+<p>Plot:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
+<span class="n">sns</span><span class="p">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="s">'x'</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="s">'y'</span><span class="p">,</span><span class="n">hue</span><span class="o">=</span><span class="s">'target'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">'decision bnd 0/1'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p3</span><span class="p">,</span><span class="n">p4</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">'decision bnd 1/2'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p5</span><span class="p">,</span><span class="n">p6</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">'decision bnd 0/2'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">'best'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">title</span><span class="p">(</span><span class="s">'Linear Regression 3 classes Decision Boundary'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/machine%20learning/2020/06/20/linear_regression.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

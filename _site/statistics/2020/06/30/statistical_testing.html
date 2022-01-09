@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Statistical Testing | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Statistical Testing" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We explain in detail the Student’s t-statistic and the chi**2 statistic." />
+<meta property="og:description" content="We explain in detail the Student’s t-statistic and the chi**2 statistic." />
+<link rel="canonical" href="http://localhost:4000/statistics/2020/06/30/statistical_testing.html" />
+<meta property="og:url" content="http://localhost:4000/statistics/2020/06/30/statistical_testing.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-06-30T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Statistical Testing" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/statistics/2020/06/30/statistical_testing.html","headline":"Statistical Testing","dateModified":"2020-06-30T00:00:00+02:00","datePublished":"2020-06-30T00:00:00+02:00","description":"We explain in detail the Student’s t-statistic and the chi**2 statistic.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/statistics/2020/06/30/statistical_testing.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Statistical Testing</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-06-30T00:00:00+02:00" itemprop="datePublished">
+        Jun 30, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ol>
+  <li><a href="#def1">Student’s t-test</a>
+    <ul>
+      <li>One-sample mean</li>
+      <li>Two-sample mean</li>
+      <li>Regression coefficient</li>
+      <li>Correlation</li>
+    </ul>
+  </li>
+  <li><a href="#def2">Chi square test</a>
+    <ul>
+      <li>Pearson’s Chi-square test</li>
+      <li>Variance</li>
+    </ul>
+  </li>
+</ol>
+
+<p><a name="def1"></a></p>
+<h3 id="1-students-t-test"><strong>1. Student’s t-test</strong></h3>
+<ul>
+  <li>One-sample mean</li>
+</ul>
+
+<p>Consider $n$ random variables distributed i.i.d., each following a normal distribution with mean $\mu$ and variance $\sigma$. The joint probability density function is</p>
+
+\[\frac{1}{(\sqrt{2\pi}\sigma)^n} e^{-\sum_{i=1}^{n}\frac{(x_i-\mu)^2}{2\sigma^2}}\prod_{i=1}^n dx_i\]
+
+<p>We want to write a density distribution as a function of $\bar{x}=\frac{\sum_i x_i}{n}$, the sample mean. As such, use the equality</p>
+
+\[\sum_{i=1}^n(x_i-\mu)^2=\sum_{i=1}^n (x_i-\bar{x})^2+n(\bar{x}-\mu)^2\]
+
+<p>and change variables $(x_1,\ldots,x_n)\rightarrow (x_1,\ldots,x_{n-1},\bar{x})$ - the jacobian of the coordinate transformation is $n$. The density function becomes</p>
+
+\[\frac{1}{(\sqrt{2\pi}\sigma)^n} e^{-\sum_{i=1}^{n}\frac{(x_i-\bar{x})^2}{2\sigma^2}-n\frac{(\bar{x}-\mu)^2}{2\sigma^2}}d\bar{x}\prod_{i=1}^{n-1} dx_i\]
+
+<p>Because $x_i$ and $\bar{x}$ are independent, we can shift the variables $x_i\rightarrow x_i+\bar{x}$, after which the term $\sum_{i=1}^{n}(x_i-\bar{x})^2$ becomes $\sum_{i=1}^{n-1}x_i^2+(\sum_i^{n-1}x_i)^2$. Since this is quadratic in the $x_i$, it can be safely integrated out. However, before doing that we write</p>
+
+\[x_i=\frac{s}{\sqrt{n-1}}u_i\]
+
+<p>, with</p>
+
+\[\sum_{i=1}^{n-1}u_i^2+(\sum_i^{n-1}u_i)^2=1\]
+
+<p>, that is, $(s,u_i)$ play a similar role to spherical coordinates. The density distribution becomes</p>
+
+\[\frac{1}{(\sqrt{2\pi}\sigma)^n} e^{-(n-1)\frac{s^2}{2\sigma^2}-n\frac{(\bar{x}-\mu)^2}{2\sigma^2}}s^{n-2}\,\Omega(u_i)dsd\bar{x}\prod_{i=1}^{n-1} du_i\]
+
+<p>where $\Omega(u_i)$ is a measure for the variables $u_i$- it gives an overall constant that we determine at the end instead.</p>
+
+<p>To remove dependence on the variance $\sigma$ we consider the variable $t=(\bar{x}-\mu)\sqrt{n}/s$, which gives the Jacobian $s/\sqrt{n}$. We scale $s\rightarrow \sqrt{\frac{2}{n-1}}s\sigma$ to obtain</p>
+
+\[\propto \int_{s=0}^{\infty}e^{-s^2(1+\frac{1}{n-1}t^2)}s^{n-1}\,dsdt\]
+
+<p>By changing $s\rightarrow \sqrt{s}$ we obtain</p>
+
+\[\propto\Big(1+\frac{1}{n-1}t^2\Big)^{-\frac{n}{2}}\Gamma(n/2)dt\]
+
+<p>and integrating over $t: (-\infty,\infty)$ we fix the overall constant</p>
+
+\[\frac{\Gamma(n/2)}{\sqrt{(n-1)\pi}\Gamma(\frac{n-1}{2})}\Big (1+\frac{1}{n-1}t^2\Big)^{-\frac{n}{2}}\]
+
+<p>This is known as the <strong>Student’s t-distribution</strong> with $\nu=n-1$ degrees of freedom.</p>
+<div style="text-align: center"><img src="/images/Student_t.png" width="60%" /></div>
+
+<ul>
+  <li>Two-sample mean (equal variance)</li>
+</ul>
+
+<p>For two samples with sizes $n_1,n_2$, the idea is roughly the same. We follow similar steps as in the previous case. After some algebra, the exponential contains the terms</p>
+
+\[-(n_1-1)\frac{s_1^2}{2\sigma^2}-(n_2-1)\frac{s_2^2}{2\sigma^2}-n_1\frac{(\bar{x}_1-\mu_1)^2}{2\sigma^2}-n_2\frac{(\bar{x}_2-\mu_2)^2}{2\sigma^2}\]
+
+<p>where $s_1$ and $s_2$ are the two sample means.</p>
+
+<p>Now we write 
+\(\bar{x}_1-\mu_1=(\bar{x}_{+}+\bar{x}_{-})/2\)
+and \(\bar{x}_2-\mu_2=(\bar{x}_{+}-\bar{x}_{-})/2\), because we will want to integrate over 
+\(\bar{x}_{+}\)
+. We use the equality</p>
+
+\[-n_1(\bar{x}_1-\mu_1)^2-n_2(\bar{x}_2-\mu_2)^2=-\frac{\bar{x}_{-}^2}{1/n_1+1/n_2}-\frac{n_1+n_2}{4}\Big(\bar{x}_{+}+\frac{n_1-n_2}{n_1+n_2}\bar{x}_{-}\Big)^2\]
+
+<p>and integrate over $\bar{x}_{+}$. So we are left with</p>
+
+\[-(n_1-1)\frac{s_1^2}{2\sigma^2}-(n_2-1)\frac{s_2^2}{2\sigma^2}-\frac{\bar{x}_{-}^2}{(1/n_1+1/n_2)2\sigma^2}\]
+
+<p>By writing</p>
+
+\[s^2=\frac{(n_1-1)s_1^2+(n_2-1)s_2^2}{n_1+n_2-2},\;t=\frac{\bar{x}_{-}}{s\sqrt{1/n_1+1/n_2}}\]
+
+<p>we obtain again the t-distribution with $\nu=n_1+n_2-2$ degrees of freedom.</p>
+
+<ul>
+  <li>Regression coefficient</li>
+</ul>
+
+<p>In linear regression, we assume that the target $y$ is a linear combination of the feature $x$ up to a gaussian noise, that is,</p>
+
+\[y=ax+b+\epsilon\]
+
+<p>where $\epsilon$ is the noise distributed i.i.d according to a normal distribution with mean zero. Here $a,b$ are the true parameters that we want to estimate. In linear regression we use least square error to determine the estimators</p>
+
+\[\hat{a}=\frac{\sum_i(y_i-\bar{y})(x_i-\bar{x})}{\sum_i(x_i-\bar{x})^2},\;\hat{b}=\bar{y}-\hat{a}\bar{x}\]
+
+<p>We want to calculate a probability for the difference $\hat{a}-a$. To do this we substitute $y_i=ax_i+b+\epsilon_i$ in the estimator equation. This gives</p>
+
+\[\hat{a}-a=\frac{\sum_i (\epsilon_i-\bar{\epsilon})(x_i-\bar{x})}{\sum_i(x_i-\bar{x})^2},\;\; \hat{b}-b=(a-\hat{a})\bar{x}+\bar{\epsilon}\]
+
+<p>Since $\epsilon$ is normally distributed we want determine the probability of the quantity above. To facilitate the algebra we use vectorial notation. As such</p>
+
+\[\frac{\overrightarrow{\zeta}\cdot\overrightarrow{\gamma}}{\|\overrightarrow{\gamma}\|^2}\equiv\frac{\sum_i (\epsilon_i-\bar{\epsilon})(x_i-\bar{x})}{\sum_i(x_i-\bar{x})^2},\;\;\hat{b}-b=-\frac{\overrightarrow{\zeta}\cdot\overrightarrow{\gamma}}{\|\overrightarrow{\gamma}\|^2}\bar{x}+\overrightarrow{\epsilon}\cdot \overrightarrow{1}\]
+
+<p>where $\overrightarrow{\gamma}\equiv x_i-\bar{x}$, $\zeta\equiv \epsilon_i-\bar{\epsilon}$ and $\overrightarrow{1}=(1,1,1,\ldots,1)/n$, a vector of ones divided by the number of datapoints. Note that</p>
+
+\[\overrightarrow{\gamma}\cdot \overrightarrow{1}=0,\;\;\overrightarrow{\zeta}\cdot \overrightarrow{1}=0\]
+
+<p>The probability density function is proportional to the exponential of</p>
+
+\[-\frac{\|\overrightarrow{\epsilon}\|^2}{2\sigma^2}\]
+
+<p>We write 
+\(\overrightarrow{\epsilon}=\overrightarrow{\epsilon}_{\perp}+\alpha\overrightarrow{\gamma}+\beta\overrightarrow{1}\)
+ with 
+\(\overrightarrow{\epsilon}_{\perp}\cdot \overrightarrow{\gamma}=\overrightarrow{\epsilon}_{\perp}\cdot \overrightarrow{1}=0\). 
+We calculate</p>
+
+\[\frac{\overrightarrow{\zeta}\cdot\overrightarrow{\gamma}}{\|\overrightarrow{\gamma}\|^2}=\alpha,\;\; \|\overrightarrow{\epsilon}\|^2=\|\overrightarrow{\epsilon}_{\perp}\|^2+\alpha^2\|\overrightarrow{\gamma}\|^2+\frac{\beta^2}{n}\]
+
+<p>Integrating out $\beta$ we can build a t-test like variable with $n-2$ degrees of freedom, since $\overrightarrow{\epsilon}_{\perp}$ lives in a $n-2$ dimensional vector space. That is, 
+\(t=\frac{\alpha\|\overrightarrow{\gamma}\|}{\|\overrightarrow{\epsilon}_{\perp}\|}\sqrt{n-2}\)</p>
+
+<p>One can show that $|\overrightarrow{\epsilon}_{\perp}|^2=\sum_i(y_i-\hat{y}_i)^2$, and therefore</p>
+
+\[t=\frac{\hat{a}-a}{\sqrt{\frac{\sum_i(y_i-\hat{y}_i)^2}{\sum_i(x_i-\bar{x}_i)^2}}}\sqrt{n-2}\]
+
+<p>For the intercept the logic is similar.  We have</p>
+
+\[\hat{b}-b=-\frac{\overrightarrow{\zeta}\cdot\overrightarrow{\gamma}}{\|\overrightarrow{\gamma}\|^2}\bar{x}+\overrightarrow{\epsilon}\cdot \overrightarrow{1}=-\alpha\bar{x}+\frac{\beta}{n}\]
+
+<p>and thus</p>
+
+\[\|\overrightarrow{\epsilon}\|^2=\|\overrightarrow{\epsilon}_{\perp}\|^2+\alpha^2\|\overrightarrow{\gamma}\|^2+n(\hat{b}-b+\alpha\bar{x})^2\]
+
+<p>Integrating out $\alpha$ one finds that</p>
+
+\[t_{\text{intercept}}=\frac{(\hat{b}-b)\|\overrightarrow{\gamma}\|\sqrt{n-2}}{\|\overrightarrow{\epsilon}_{\perp}\|\sqrt{\|\overrightarrow{\gamma}\|^2/n+\bar{x}^2}}\]
+
+<p>follows the Student’s t-distribution with $n-2$ degrees of freedom.</p>
+
+<ul>
+  <li>Correlation</li>
+</ul>
+
+<p>We want to test whether two variables  $y$ and $x$ have zero correlation, statistically speaking. Essentialy this accounts to fit $y\sim ax+b$. We have seen that the regression coefficient $a$ is proportional to the sample correlation coefficient, that is,</p>
+
+\[a=\frac{\langle yx\rangle -\langle y\rangle \langle x\rangle}{\langle x^2\rangle -\langle x\rangle^2 }=r\frac{\sigma(y)}{\sigma(x)}\]
+
+<p>where $\sigma(y)^2=\sum_{i}(y_i-\bar{y})^2/n$ and $\sigma(x)^2=\sum_{i}(x_i-\bar{x})^2/n$, and $r$ is the Pearson’s correlation coefficient. Then we use the equality</p>
+
+\[\sum_{i}(y_i-\hat{y}_i)^2/n=\sigma(y)^2(1-r^2)\]
+
+<p>to find that the t-statistic for the regression coefficient $a$ can be written as</p>
+
+\[t=\frac{r\sqrt{n-2}}{\sqrt{1-r^2}}\]
+
+<p>assuming that true coefficient is zero, that is, $a=0$.</p>
+
+<p><a name="def2"></a></p>
+<h3 id="2-chi-square-test"><strong>2. Chi square test</strong></h3>
+
+<p>Let each $X_i,\,i=1\ldots n$ be a random variable following a standard normal distribution. Then the sum of squares</p>
+
+\[\chi^2=\sum_{i=1}^nX^2_i\]
+
+<p>follows a chi-distribution with $k$ degrees of freedom. To understand this, consider the joint probability density function of $n$ standard normal random variables</p>
+
+\[e^{-\frac{1}{2}\sum_{i=1}^n X_i^2}\prod_{i=1}^n dX_i\]
+
+<p>If we use spherical coordinates with</p>
+
+\[X_i=ru_i,\;\sum_{i=1}^n u_i^2=1\]
+
+<p>the probability density becomes</p>
+
+\[e^{-\frac{r^2}{2}}drr^{n-1}\Omega\]
+
+<p>where $\Omega$ comes from integrating out $u_i$. Since $r$ is never negative we further use $s=r^{2}$ and  obtain</p>
+
+\[\propto e^{-\frac{s}{2}}s^{\frac{n}{2}-1}ds\]
+
+<p>Therefore the chi-square variable $\chi^2\equiv s$ with $k$ degrees of freedom follows the distribution</p>
+
+\[\chi^2\sim \frac{s^{\frac{n}{2}-1}}{2^{n/2}\Gamma(n/2)}e^{-\frac{s}{2}}\]
+
+<p>This distribution has the following shape (from Wikipedia):</p>
+<div style="text-align: center"><img src="/images/Chi-square_pdf.svg" width="60%" /></div>
+
+<ul>
+  <li>Pearson’s Chi-square test</li>
+</ul>
+
+<p>This test gives a measure of goodness of fit for a categorical variable with $k$ classes. Suppose we have $n$ observations with $x_i$ ($i=1\ldots k$) observed numbers, that is, $\sum_{i=1}^k x_i=n$. We want to test the hypotheses that each category is drawn with probability $p_i$. Under this assumption, the joint probability of observing $x_i$ numbers follows a multinomial distribution</p>
+
+\[P(x_1,x_2,\ldots,x_n)=\frac{n!}{x_1!x_2!\ldots x_k!}p_1^{x_1}p_2^{x_2}\ldots p_k^{x_k}\]
+
+<p>We want to understand the behaviour of this probability when $n$ is very large. Assume that $x_i$ is also sufficiently large, which is ok to do for typical observations. In this case use stirling’s approximation of the factorial, that is,</p>
+
+\[n!\simeq \sqrt{2\pi n}\Big(\frac{n}{e}\Big)^n\]
+
+<p>to write</p>
+
+\[P(x_1,x_2,\ldots,x_n)\propto \Big(\frac{n}{e}\Big)^n \prod_{i=1}^k \Big(\frac{x_i}{e}\Big)^{-x_i}p_i^{x_i}\]
+
+<p>In taking $n$ very large, we want to keep the frequency $\lambda_i=x_i/ n$ fixed. Then the logarithm of the above expression becomes</p>
+
+\[\ln P(x_1,x_2,\ldots,x_n)=-\sum_{i=1}^k\lambda_in\ln(\lambda_i)+\sum_{i=1}^k\lambda_i n\ln(p_i)\]
+
+<p>Since this is proportional to $n$ we can perform an asymptotic expansion as $n\gg 1$. We perform the expansion around the maximum of $\ln P$ (note that $\ln P$ is a concave function of $\lambda_i$ ), that is,</p>
+
+\[\frac{\partial P}{\partial \lambda_i}=0,\;i=1\ldots n-1\]
+
+<p>Using the fact that we have $n-1$ independent variables since $\sum_i \lambda_i=1$, the solution is $\lambda_i^*=p_i$. Expanding around this solution we find</p>
+
+\[\ln P(\lambda_1,\lambda_2,\ldots,\lambda_n)=-n\sum_{i=1}^k\frac{(\lambda_i-p_i)^2}{2p_i}\]
+
+<p>In terms of $x_i$ this gives</p>
+
+\[\ln P(x_1,x_2,\ldots,x_n)=-\sum_{i=1}^k\frac{(x_i-m_i)^2}{2m_i}\]
+
+<p>where $m_i=np_i$ is the expected observed number. Therefore the quantity</p>
+
+\[\sum_{i=1}^k\frac{(x_i-m_i)^2}{m_i}\]
+
+<p>follows a $\chi^2$ distribution with $k-1$ degrees of fredom, since only $k-1$ of the $x$’s are independent.</p>
+
+<ul>
+  <li>Variance</li>
+</ul>
+
+<p>In order to investigate the difference between the sample variance $s^2=\sum_i(x_i-\bar{x})^2/n-1$ and the assumed variance $\sigma^2$ of the distribution. We calculate
+\((n-1)\frac{s^2}{\sigma^2}\)
+Remember that for a normally distributed random variable $x_i$, the sum $\sum_i(x_i-\bar{x})^2$ also follows a normal distribution. In particular, the combination $\sum_i(x_i-\bar{x})^2/\sigma^2$ follows a $\chi^2$ distribution with $n-1$ degrees of freedom, because we have integrated out $\bar{x}$ as explained in the beginning of the post.</p>
+
+  </div><a class="u-url" href="/statistics/2020/06/30/statistical_testing.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

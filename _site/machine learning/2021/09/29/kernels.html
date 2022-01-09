@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Kernel Methods | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="Kernel Methods" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We explore the use of Kernels in classification, regression and density estimation." />
+<meta property="og:description" content="We explore the use of Kernels in classification, regression and density estimation." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2021/09/29/kernels.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2021/09/29/kernels.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-09-29T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Kernel Methods" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2021/09/29/kernels.html","headline":"Kernel Methods","dateModified":"2021-09-29T00:00:00+02:00","datePublished":"2021-09-29T00:00:00+02:00","description":"We explore the use of Kernels in classification, regression and density estimation.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2021/09/29/kernels.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Kernel Methods</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2021-09-29T00:00:00+02:00" itemprop="datePublished">
+        Sep 29, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h3 id="definition">Definition</h3>
+
+<p>A kernel $K(x,x’)$ is a function that obeys the property</p>
+
+\[K(x,x')=\langle\Phi(x)\cdot\Phi(x')\rangle\]
+
+<p>where $\langle\cdot\rangle$ denotes inner product in some vector space $\mathbb{V}$ and $\Phi(x)$ is a mapping from $x\in \mathbb{R}^d$ to $\mathbb{V}$, known as feature map. Examples:</p>
+
+<ul>
+  <li>Any polynomial function of $\langle x\cdot x’\rangle$ is a kernel. This is because of the property that</li>
+</ul>
+
+\[\begin{equation*}\begin{split}
+&amp;\langle x\cdot x'\rangle^p = \left(\sum_{i=1}^d x_i x'_i\right)^p =\sum_k C(k) x_i^k {x'}_i^k\\
+&amp;=(C(1)^{1/2}x_1,C(2)^{1/2}x_1^2,\ldots, C(1)^{1/2}x_2,\ldots)^{T}(C(1)^{1/2}{x'}_1,C(2)^{1/2}{x'}_1^2,\ldots,C(1)^{1/2} {x'}_2,\ldots)
+\end{split}\end{equation*}\]
+
+<ul>
+  <li>Using this, we can also show that the gaussian function is a kernel:</li>
+</ul>
+
+\[\begin{equation*}\begin{split}&amp;\exp{\left(-\gamma |x-x'|^2\right)}=\exp{\left(-\gamma x^2-\gamma {x'}^2-2\gamma \langle x\cdot x'\rangle\right)}=\\
+&amp;=\exp{\left(-\gamma x^2-\gamma {x'}^2\right)} \sum_{n=1}^{\infty}\frac{(-2\langle x\cdot x'\rangle)^n}{n!}\end{split}\end{equation*}\]
+
+<h3 id="regression">Regression</h3>
+
+<p>In the KNN algorithm we take the K nearest neighbors of point $x$ and average their values. That is,</p>
+
+\[\hat{y}|_x=\frac{1}{K}\sum_{i\in \text{K-neighbors(x)}} y_i|_x\]
+
+<p>We can put it differently by considering probabilities $p(y_i|x)=\frac{1}{K}$ and attach them to the $K$ neighbors of point $x$. 
+Then the above average becomes</p>
+
+\[\hat{y}|_x=E(y|x)\]
+
+<p>Rather than giving equal weights to the neighbors, we can give weights that decay with distance. This allows us to include contributions from very far without introducing additional bias. For example, using the gaussian function kernel we can write</p>
+
+\[p(y_i,x)=\frac{1}{N}\exp{\left(-\frac{|x-x_i|^2}{d^2}\right)}\]
+
+<p>where $N$ is the number of datapoints in the training set and $d$ is the Kernel width. It follows that</p>
+
+\[p(y_i|x)=\frac{p(y_i,x)}{\sum_i p(y_i,x)}\]
+
+<p>and</p>
+
+\[E(y|x)=\frac{\sum_i y_ip(y_i,x)}{\sum_i p(y_i,x)}\]
+
+<p>Note that for $d\rightarrow \infty$ all the data-points contribute equally and $p(y_i|x)\rightarrow\frac{1}{N}$. 
+This is the limiting case of KNN algorithm when we include all the neighbors. We have seen that when the number of neighbors is large variance decreases but bias increases. However, for $d$ small, only the closest neighbors contribute. In this case we expecte variance to increase, but bias to be small.</p>
+
+<p>As an example, we generate an artificial training dataset for the line:</p>
+
+\[f(x)=x^2 e^{-0.05x}\]
+
+<p>and fit a gaussian kernel.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+<span class="n">xtrain</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">eps</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">y</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">ytrain</span><span class="o">=</span><span class="n">y</span><span class="o">+</span><span class="n">eps</span>
+
+<span class="k">class</span> <span class="nc">KernelRg</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">d</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">=</span><span class="n">d</span>
+        
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">x</span><span class="o">=</span><span class="n">x</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">y</span><span class="o">=</span><span class="n">y</span>
+        
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">f</span><span class="p">(</span><span class="n">z</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span>
+        <span class="n">r_</span><span class="o">=</span><span class="n">r</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">y</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">r_</span><span class="o">=</span><span class="n">r_</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">N</span><span class="o">=</span><span class="n">r</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r_</span><span class="o">/</span><span class="n">N</span>
+    
+    <span class="k">def</span> <span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">f</span><span class="p">(</span><span class="n">z</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">r</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">p</span>
+    
+    <span class="k">def</span> <span class="nf">le</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">prob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">L</span><span class="o">=-</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">L</span>
+        
+    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">p</span>
+
+<span class="n">K</span><span class="o">=</span><span class="n">KernelRg</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">K</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span><span class="n">ytrain</span><span class="p">)</span>
+
+<span class="n">sample</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">ysample</span><span class="o">=</span><span class="n">K</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We plot a prediction for various widths $d$ including the log-likelihood defined as</p>
+
+\[\text{Log-Likelihood}=-\sum_x \ln(\sum_i p(y_i,x))\]
+
+<div style="text-align: center"><img src="/blog-data-science/images/kernel_reg_d.png" width="100%" /></div>
+
+<p>For small $d$ we see a lot of variance and for larger values of $d$ the function changes very slowly. In fact, when $d$ is small the contributions from the nearest neighbors contribute more strongly and as such variance increases. But for large $d$ all the data-points start contributing equally which increases bias.</p>
+
+<h3 id="density-estimation">Density Estimation</h3>
+
+<p>One way to estimate a density distribution is to build a histogram. In a histogram we partition the feature space in buckets and then count how many data-points fall in those buckets. However, the histogram depends on a partition choice, so it is not unique, and does not provide a smooth, continuous distribution function.</p>
+
+<p>A way to resolve these issues is by considering the empirical distribution. It can be represented as a sum of Dirac delta functions:</p>
+
+\[f(x)=\frac{1}{N}\sum_{x_i} \delta(x-x_i)\]
+
+<p>where $N$ is the number of datapoints $x_i$. In contrast with the histogram, this distribution is unique and can be used to calculate the probability for any $x$. For example, the probability of finding $x$ in the interval $[a,b]$ is given by</p>
+
+\[\int_a^bf(x)dx=\frac{1}{N}\sum_{x_i} \int_a^b\delta(x-x_i)dx=\frac{\# x_i\in[a,b]}{N}\]
+
+<p>Despite providing an accurate representation of the sample distribution, $f(x)$ is highly singular and cannot be used in practice. Instead we can consider an approximation, which is smooth, by using the identity:</p>
+
+\[\delta(x-x')=\lim_{d\rightarrow 0}\frac{1}{\sqrt{2\pi}d}e^{-(x-x')^2/2d^2}\]
+
+<p>We can approximate the sum of delta functions using a finite $d$, that is,</p>
+
+\[f(x)\simeq \frac{1}{N}\sum_{x_i}\frac{1}{\sqrt{2\pi}d}e^{-(x-x_i)^2/2d^2}\]
+
+<p>which reproduces exactly $f(x)$ in the limit $d\rightarrow 0$. Here $d$, the width, acts as a regulator of the singular behaviour of the Dirac delta function.</p>
+
+<p>As an example, we sample a set of $x_i$ from the distribution:</p>
+
+\[f(x)=\frac{1}{3\sqrt{2\pi 2}}e^{-x^2/4}+\frac{1}{3\sqrt{2\pi 6}}e^{-(x-7)^2/6}+\frac{1}{3\sqrt{2\pi 3}}e^{-(x-12)^2/3}\]
+
+<div style="text-align: center"><img src="/blog-data-science/images/kernel_dens_1.png" width="70%" /></div>
+
+<p>Then we fit the training set with a gaussian Kernel:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">KernelDensity</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">d</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">=</span><span class="n">d</span>
+    
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">xtrain</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">xtrain</span><span class="o">=</span><span class="n">xtrain</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="o">=</span><span class="n">xtrain</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">xtrain</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">f</span><span class="p">(</span><span class="n">z</span><span class="o">-</span><span class="n">mu</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">r</span><span class="o">/</span><span class="bp">self</span><span class="p">.</span><span class="n">n</span>
+    
+    <span class="k">def</span> <span class="nf">le</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">=-</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">r</span>
+    
+    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">p</span>
+
+<span class="n">K</span><span class="o">=</span><span class="n">KernelDensity</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">K</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This is the estimated density for various values of $d$ including the corresponding log-likelihood:</p>
+
+<div style="text-align: center"><img src="/blog-data-science/images/kernel_dens_2.png" width="100%" /></div>
+
+<h3 id="classification">Classification</h3>
+
+<p>In classification, we have a set $(x_i,c_i)$ with $c_i=0,1,\ldots$ the labels. We are interested in estimating</p>
+
+\[P(c|x)\]
+
+<p>from the data. This can be written as</p>
+
+\[P(c|x)=\frac{P(x|c)P(c)}{\sum_{c'} P(x|c')P(c')}\]
+
+<p>So using the previous results on density estimation, we can calculate</p>
+
+\[P(x|c)\]
+
+<p>for each class using a kernel. The probability $P(c)$ is easily estimated using the maximum-likelihood principle, giving</p>
+
+\[P(c)=\frac{\# (c_i=c)}{N}\]
+
+<p>with $N$ the number of data-points.</p>
+
+<p>Example in Python</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_breast_cancer</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">data</span><span class="o">=</span><span class="n">load_breast_cancer</span><span class="p">()</span>
+<span class="n">X</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span>
+<span class="n">Y</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s">'target'</span><span class="p">]</span>
+
+</code></pre></div></div>
+<p>We use StandardScaler to standardize the dataset:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ss</span><span class="o">=</span><span class="n">StandardScaler</span><span class="p">()</span>
+<span class="n">X_s</span><span class="o">=</span><span class="n">ss</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">xtrain</span><span class="p">,</span><span class="n">xtest</span><span class="p">,</span><span class="n">ytrain</span><span class="p">,</span><span class="n">ytest</span><span class="o">=</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">X_s</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Then we define the Kernel model:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">KernelClf</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">d</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="o">=</span><span class="n">d</span>
+        
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">labels</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">N</span><span class="o">=</span><span class="n">counts</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pc</span><span class="o">=</span><span class="p">{</span><span class="n">l</span><span class="p">:</span> <span class="n">c</span><span class="o">/</span><span class="n">N</span> <span class="k">for</span> <span class="n">l</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">counts</span><span class="p">)}</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">kernels</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="n">id_c</span><span class="o">=</span> <span class="n">y</span><span class="o">==</span><span class="n">l</span>
+            <span class="n">x_c</span><span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">id_c</span><span class="p">]</span>
+            <span class="n">K</span><span class="o">=</span><span class="n">Kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">K</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_c</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">kernels</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">=</span><span class="n">K</span>
+    
+    <span class="k">def</span> <span class="nf">predict_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">pv</span><span class="o">=</span><span class="p">[</span><span class="n">K</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">pc</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">K</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">kernels</span><span class="p">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="n">P</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
+        <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="n">p</span><span class="o">/</span><span class="n">P</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pv</span><span class="p">]</span>
+        <span class="n">prob</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">p</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prob</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">prob</span>
+    
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">pv</span><span class="o">=</span><span class="p">[</span><span class="n">K</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">pc</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">K</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">kernels</span><span class="p">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="n">P</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
+        <span class="n">prob</span><span class="o">=</span><span class="p">[</span><span class="n">p</span><span class="o">/</span><span class="n">P</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pv</span><span class="p">]</span>
+        <span class="n">prob</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">p</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prob</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">prob</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Train:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Kclf</span><span class="o">=</span><span class="n">KernelClf</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">Kclf</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span><span class="n">ytrain</span><span class="p">)</span>
+
+<span class="n">ypred</span><span class="o">=</span><span class="n">Kclf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">)</span>
+<span class="n">acc</span><span class="o">=</span><span class="p">(</span><span class="n">ypred</span><span class="o">==</span><span class="n">ytest</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+<span class="mf">97.37</span><span class="o">%</span>
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/machine%20learning/2021/09/29/kernels.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

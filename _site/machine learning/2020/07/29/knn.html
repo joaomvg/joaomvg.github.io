@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>K-Nearest Neighbors | Data Science and Machine Learning</title>
+<meta name="generator" content="Jekyll v4.2.1" />
+<meta property="og:title" content="K-Nearest Neighbors" />
+<meta name="author" content="Joao Gomes" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="We explain the Nearest Neighbors algorithm. It follows from the idea of continuity that two datapoints that are close enough should have similar targets. We include a theoretical derivation, a description of the decision boundary, and a Python implementation from scratch." />
+<meta property="og:description" content="We explain the Nearest Neighbors algorithm. It follows from the idea of continuity that two datapoints that are close enough should have similar targets. We include a theoretical derivation, a description of the decision boundary, and a Python implementation from scratch." />
+<link rel="canonical" href="http://localhost:4000/machine%20learning/2020/07/29/knn.html" />
+<meta property="og:url" content="http://localhost:4000/machine%20learning/2020/07/29/knn.html" />
+<meta property="og:site_name" content="Data Science and Machine Learning" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-07-29T00:00:00+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="K-Nearest Neighbors" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Joao Gomes"},"url":"http://localhost:4000/machine%20learning/2020/07/29/knn.html","headline":"K-Nearest Neighbors","dateModified":"2020-07-29T00:00:00+02:00","datePublished":"2020-07-29T00:00:00+02:00","description":"We explain the Nearest Neighbors algorithm. It follows from the idea of continuity that two datapoints that are close enough should have similar targets. We include a theoretical derivation, a description of the decision boundary, and a Python implementation from scratch.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/machine%20learning/2020/07/29/knn.html"},"@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+  <link rel="shortcut icon" type="image/png" href="/blog-data-science/favicon.png"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Data Science and Machine Learning" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Data Science and Machine Learning</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a><a class="page-link" href="/categories/">Categories</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">K-Nearest Neighbors</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2020-07-29T00:00:00+02:00" itemprop="datePublished">
+        Jul 29, 2020
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul>
+  <li><a href="#1-knn-algorithm"><strong>1. KNN algorithm</strong></a></li>
+  <li><a href="#2-decision-boundary"><strong>2. Decision Boundary</strong></a></li>
+  <li><a href="#3-curse-of-dimensionality"><strong>3. Curse of Dimensionality</strong></a></li>
+  <li><a href="#4-python-implementation-classification"><strong>4. Python Implementation: Classification</strong></a></li>
+</ul>
+
+<p><a name="def1"></a></p>
+<h3 id="1-knn-algorithm"><strong>1. KNN algorithm</strong></h3>
+
+<p>The nearest-neighbors algorithm considers the $K$ nearest neighbors of a datapoint $x$ to predict its label. In the figure below, we have represented a binary classification problem (colors red and green for classes 0,1 respectively) with datapoints living in a 2-dimensional feature space.</p>
+<div style="text-align: center"><img src="/images/knn.png" width="60%" /></div>
+
+<p>The algorithm consists in attributing the majority class amongts the $K$-nearest neighbors. In the example above we consider the 3 nearest neighbors using euclidean distances. Mathematically the predictor $\hat{y}$ is given by</p>
+
+\[\hat{y}(x)=\text{argmax}_{0,1}\{n_0(x),n_1(x): x\in D_K(x)\}\]
+
+<p>where $D_K(x)$ is the set of $K$-nearest neighbors and $n_{0,1}(x)$ are the number of neighbors in $D_K$ with class $0,1$ respectively. The ratio $n_{0,1}/K$ are the corresponding probabilities. For a multiclass problem the predictor follows a similar logic except that we choose the majority class for which $n_i(x)$ is the maximum, with $i$ denoting the possible classes.</p>
+
+<p>A probabilistic approach to nearest neighbors is as follows. We consider the distribution</p>
+
+\[p(x|c)=\frac{1}{N_c\sqrt{2\pi\sigma^2}^{D/2}}\sum_{n\in\text{class c},n=1}^{n=N_c}e^{-\frac{\|x-\mu_n\|^2}{2\sigma^2}}\]
+
+<p>with $N_c$ the number of points with class $c$ which have coordinates $\mu_c$, and $x$ lives in $D$ dimensions. The probabilities $p(c)$ are determined from the observed frequencies, that is,</p>
+
+\[p(c=0)=\frac{N_0}{N_0+N_1},\;p(c=1)=\frac{N_1}{N_0+N_1}\]
+
+<p>The ratio of the likelihoods is then</p>
+
+\[\frac{p(c=1|x)}{p(c=0|x)}=\frac{p(x|c=1)p(c=1)}{p(x|c=0)p(c=0)}=\frac{\sum_{n=1}^{n=N_1}e^{-\frac{\|x-\mu_n\|^2}{2\sigma^2}}}{\sum_{n=1}^{n=N_0}e^{-\frac{\|x-\mu_n\|^2}{2\sigma^2}}}\]
+
+<p>Take $d(x)$ as the largest distance within the set of $K$-nearest neighbors of the datapoint $x$. If the variance $\sigma$ is of order $\sim d$ then the exponentials with arguments $|x-\mu|^2&gt;d^2$ can be neglected while for $|x-\mu|^2&lt;d^2$ the exponential becomes of order one, and so we approximate</p>
+
+\[\frac{\sum_{n=1}^{n=N_1}e^{-\frac{\|x-\mu_n\|^2}{2\sigma^2}}}{\sum_{n=1}^{n=N_0}e^{-\frac{\|x-\mu_n\|^2}{2\sigma^2}}}\simeq \frac{\sum_{i\in D_K^1(x)} e^{-\frac{\|x-\mu_i\|^2}{2\sigma^2}}}{\sum_{j\in D_K^0(x)} e^{-\frac{\|x-\mu_j\|^2}{2\sigma^2}}}\sim\frac{\#i}{\#j}\]
+
+<p>where $D^{0,1}_K(x)$ are the nearest neihgbors of $x$ with classes $0,1$ respectively, and $#i+#j=K$. In theory this would reproduce the K-nearest neighbors predictor. However, this would require that for each $x$ the threshold $d$ is approximately constant, which may not happen in practice. The algorithm is however exact as $\sigma\rightarrow 0$ for which only the nearest neighbor is picked.</p>
+
+<p>In regression we calculate instead the average of $K$-nearest neighbor targets. That is,</p>
+
+\[\hat{y}(x)=\frac{1}{K}\sum_{i\in D_K(x)}y_i\]
+
+<p>Consider different datasets whereby the positions of the datapoints $x$ do not change but the target $y$ is drawn randomly as $f+\epsilon$ where $f$ is the true target and $\epsilon$ is a normally distributed random variable with mean zero and variance $\sigma^2$. The bias is thus calculated as</p>
+
+\[\text{Bias}(x)=f(x)-\text{E}[\hat{f}(x)]=f(x)-\frac{1}{K}\sum_{i\in D_K(x)}f(x_i)\]
+
+<p>For $K$ small the nearest neighbors will have targets $f(x_i)$ that are approximately equal to $f(x)$, by continuity. As such, the bias is small for small values of $K$. However, as $K$ grows we are probing datapoints that are farther and farther away and thus more distinct from $f(x)$, which in general will make the bias increase.</p>
+
+<p>On the other hand, the variance at a point $x$, that is,</p>
+
+\[\text{Var}(\hat{f})|_x=\text{E}[(\hat{f}(x)-\text{E}[\hat{f}(x)])^2]\]
+
+<p>becomes equal to</p>
+
+\[\text{Var}(\hat{f})=\frac{\sigma^2}{K}\]
+
+<p>Therefore, for large values of $K$ the variance decreases, while it is larger for smaller values of $K$.</p>
+
+<p><a name="decision"></a></p>
+<h3 id="2-decision-boundary"><strong>2. Decision Boundary</strong></h3>
+
+<p>In the picture below, we draw the decision boundary for a $K=1$ nearest neighbor. For any point located inside the polygon (hard lines), the nearest neighbor is $P_1$, and so the predicted target is $f(P_1)$ in that region.</p>
+<div style="text-align: center"><img src="/images/knn_decision.png" width="60%" /></div>
+
+<p>To construct the decision boundary, we draw lines joining each point to $P_1$, and for each of these, we draw the corresponding bisector. For example, consider the points $P_1$ and $P_2$. For any point along the bisector of $\overline{P_1P_2}$, the distance to $P_1$ is the same as the distance to $P_2$. Therefore, the polygon formed by drawing all the bisectors bounds a region where the nearest point is $P_1$.</p>
+
+<p>For $K&gt;1$, we have to proceed slightly differently. First, we construct the $K=1$ decision boundary- this determines the nearest neighbor. Call this point $N_1$, the first neighbor. Second, we pretend that the point $N_1$ is not part of the dataset and proceed as in the first step. The corresponding nearest neighbor $N_2$ is then the second nearest neighbor while including $N_1$. We proceed iteratively after $K$ steps. The decision boundary is then determined by joining the $K=1$ polygons of each $N_1,N_2,\ldots N_K$.</p>
+
+<p><a name="curse"></a></p>
+<h3 id="3-curse-of-dimensionality"><strong>3. Curse of Dimensionality</strong></h3>
+
+<p>In this section, we discuss the K-nearest neighbors algorithm in higher dimensions. 
+Consider a sphere of radius $r=1$ in $d$ dimensions. We want to calculate the probability of finding the nearest neighbor at a distance $r&lt;=1$ from centre. This probability density is calculated as follows. Let $p_r$ be the probability of finding a point at a distance $r$ and $p_{&gt;r}$ the probability of finding a point at a distance $&gt;r$. Then the probability that we want can be written as</p>
+
+\[\begin{equation*}\begin{split}&amp;Np_r p_{&gt;r}^{N-1}+\frac{1}{2}N(N-1)p_r^2p_{&gt;r}^{N-2}+\ldots\\
+&amp;=(p_r+p_{&gt;r})^N-p_{&gt;r}^N\end{split}\end{equation*}\]
+
+<p>which is the probability of finding at least one point at $r$ and none for $&lt; r$. The probability $p_r$ is infinitesimally small, since</p>
+
+\[p_r=r^{d-1}dr\]
+
+<p>while $p_{&gt;r}=(1-r^d)$. Hence, we can expand the expression above and determine the probability density</p>
+
+\[\frac{dP(r)}{dr}=N r^{d-1}(1-r^{d})^{N-1}\]
+
+<p>Take $d\gg1$. The probability density has a maximum at</p>
+
+\[r^*=\frac{1}{N^{1/d}}\]
+
+<p>For the K-nearest neighbors algorithm to perform well, there should exist at each point a sufficiently large number of neighbors at distances $\epsilon\ll 1$, so one can use the continuity property of a smooth function. Therefore if we insist that $r^*=\epsilon\ll 1$, this implies that $N$ must be exponentially large as a function of $d$. In other words, for higher dimensions, the probability of finding a neighbor at distance $\epsilon$ is smaller because there is more “space” available. To compensate for that, we need an exponentially larger number of datapoints.</p>
+
+<p><a name="python"></a></p>
+<h3 id="4-python-implementation-classification"><strong>4. Python Implementation: Classification</strong></h3>
+
+<p>Define KNN class with fit and call methods. The fit method memorizes the training data and the call method retrieves the predictor.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">class</span> <span class="nc">KNN</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="o">=</span><span class="n">k</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">x</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">y</span><span class="o">=</span><span class="bp">None</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="o">=</span><span class="bp">None</span>
+        
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">x</span><span class="o">=</span><span class="n">x</span>
+        <span class="n">classes</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="o">=</span><span class="p">{</span><span class="n">a</span><span class="p">:</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span><span class="p">,</span><span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">classes</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">y</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)))</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">j</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">classes</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">x</span>
+        <span class="n">y_pred</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">t</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+            <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">norm</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">x</span><span class="o">-</span><span class="n">z</span>
+            <span class="n">norm</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">args</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="p">)[:</span><span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">ypred</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">y</span><span class="p">[</span><span class="n">args</span><span class="p">].</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">ypred</span><span class="o">=</span><span class="n">ypred</span><span class="p">.</span><span class="n">argmax</span><span class="p">()</span>
+            <span class="n">y_pred</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">ypred</span>
+        
+        <span class="k">return</span> <span class="n">y_pred</span>
+</code></pre></div></div>
+<p>As an example, load Iris dataset and also the built-in SKlearn K-nearest neighbors algorithm.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">KNeighborsClassifier</span>
+
+<span class="n">iris</span><span class="o">=</span><span class="n">load_iris</span><span class="p">()</span>
+<span class="n">features</span><span class="o">=</span><span class="n">iris</span><span class="p">[</span><span class="s">'data'</span><span class="p">]</span>
+<span class="n">target</span><span class="o">=</span><span class="n">iris</span><span class="p">[</span><span class="s">'target'</span><span class="p">]</span>
+
+<span class="c1">#train &amp; test split
+</span><span class="n">indices</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">features</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+<span class="n">l</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">features</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">xtrain</span><span class="o">=</span><span class="n">features</span><span class="p">[</span><span class="n">indices</span><span class="p">][:</span><span class="o">-</span><span class="n">l</span><span class="p">]</span>
+<span class="n">xtest</span><span class="o">=</span><span class="n">features</span><span class="p">[</span><span class="n">indices</span><span class="p">][</span><span class="o">-</span><span class="n">l</span><span class="p">:]</span>
+
+<span class="n">ytrain</span><span class="o">=</span><span class="n">target</span><span class="p">[</span><span class="n">indices</span><span class="p">][:</span><span class="o">-</span><span class="n">l</span><span class="p">]</span>
+<span class="n">ytest</span><span class="o">=</span><span class="n">target</span><span class="p">[</span><span class="n">indices</span><span class="p">][</span><span class="o">-</span><span class="n">l</span><span class="p">:]</span>
+
+<span class="n">knn</span><span class="o">=</span><span class="n">KNN</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="c1">#the class above
+</span><span class="n">Kneighbor</span><span class="o">=</span><span class="n">KNeighborsClassifier</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="c1">#the SKlearn class
+</span>
+<span class="n">knn</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span><span class="n">ytrain</span><span class="p">)</span>
+<span class="n">accuracy_score</span><span class="p">(</span><span class="n">ytest</span><span class="p">,</span><span class="n">knn</span><span class="p">(</span><span class="n">xtest</span><span class="p">))</span>
+
+<span class="n">Kneighbor</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtrain</span><span class="p">,</span><span class="n">ytrain</span><span class="p">)</span>
+<span class="n">accuracy_score</span><span class="p">(</span><span class="n">ytest</span><span class="p">,</span><span class="n">Kneighbor</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">xtest</span><span class="p">))</span>
+
+</code></pre></div></div>
+<p>Retrieving exactly the same accuracy.</p>
+
+
+  </div><a class="u-url" href="/machine%20learning/2020/07/29/knn.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Data Science and Machine Learning</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Joao Gomes</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">joaomvg</span></a></li><li><a href="https://www.linkedin.com/in/joaomvg"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">joaomvg</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Machine Learning algorithms in Python, statistics and cloud computing.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+  
+
+</html>
+
+ 
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+
+<!-- JavaScript -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters: [
+      { left: '$$',  right: '$$',  display: true  },
+      { left: '$',   right: '$',   display: false },
+      { left: '\\[', right: '\\]', display: true  },
+      { left: '\\(', right: '\\)', display: false }
+  ]
+  });">
+</script>
+
+
+
+

@@ -86,21 +86,21 @@ Now that we have uploaded the docker image we can go to Sagemaker section and cr
 
 #### **Create Model**
 We give it a name
-<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_model_step.png"  width="80%"></div>
+<div style="text-align: center"><img src="/images/sagemaker_deployment_model_step.png"  width="80%"></div>
 then we choose to "Provide model artifacts and image location" since we want to use our container
-<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_model_step2.png"  width="80%"></div>
+<div style="text-align: center"><img src="/images/sagemaker_deployment_model_step2.png"  width="80%"></div>
 and last we choose "single model" and then write the URI of the docker image. Since our container already has the pickled model we do not need to write anything in the box "Location of model artifacts"
-<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_model_step3.png"  width="80%"></div>
+<div style="text-align: center"><img src="/images/sagemaker_deployment_model_step3.png"  width="80%"></div>
 
 #### **Endpoint-Configuration**
 
 We give it a name and then choose the model that we have created in previous step. At this point we need to choose the EC2 instance that will run the container.
-<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployement_endpntconfig.png"  width="80%"></div>
+<div style="text-align: center"><img src="/images/sagemaker_deployement_endpntconfig.png"  width="80%"></div>
 
 #### **Endpoint**
 
 Give a name to the endpoint and then choose an existing endpoint-configuration, the one we have previously created:
-<div style="text-align: center"><img src="/blog-data-science/images/sagemaker_deployment_endpoint.png"  width="80%"></div>
+<div style="text-align: center"><img src="/images/sagemaker_deployment_endpoint.png"  width="80%"></div>
 Then choose "Create Endpoint".
 
 ### Access Endpoint
@@ -114,4 +114,4 @@ Now that the model is deployed and the endpoint is in "Service", we build an API
 #### 1. Invoke Sagemaker directly
 
 In this case the AWS user must have the permission to invoke the sagemaker endpoint. Then we need the credentials **Access_Key_id** and **Secret_access_key** of this user. In Postman the request looks like
-<div style="text-align: center"><img src="/blog-data-science/images/postman_access_endpoint.png"  width="100%"></div>
+<div style="text-align: center"><img src="/images/postman_access_endpoint.png"  width="100%"></div>

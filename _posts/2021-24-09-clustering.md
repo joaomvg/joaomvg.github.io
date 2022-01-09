@@ -19,7 +19,7 @@ The algorithm follows the steps:
 3. Calculate the center-of-mass for each group, which is now the new cluster center position;
 4. Loop through 2,3 until a certain degree of convergence is achieved.
 
-<div style="text-align: center"><img src="/blog-data-science/images/kmeans.png"  width="40%"></div>
+<div style="text-align: center"><img src="/images/kmeans.png"  width="40%"></div>
 
 In the picture above, $p1$ represents the initial cluster position and $p2$ is center-of-mass. The algorithm continues until the change in the cluster positions is within a certain margin of error, indicating that it has converged. 
 
@@ -146,7 +146,7 @@ xs_all=np.concatenate(xs)
 ```
 that is,
 
-<div style="text-align: center"><img src="/blog-data-science/images/clusters.png"  width="70%"></div>
+<div style="text-align: center"><img src="/images/clusters.png"  width="70%"></div>
 
 To solve the problem instantiate the object and run fit method:
 ```python
@@ -154,10 +154,10 @@ km=Kmeans(N,0.01)
 km.fit(xs_all)
 ```
 
-<div style="text-align: center"><img src="/blog-data-science/images/clusters_pred.png"  width="70%"></div>
+<div style="text-align: center"><img src="/images/clusters_pred.png"  width="70%"></div>
 
 The dark crosses represent the solution of the k-means algorithm. We can keep track of the iterations:
 
-<div style="text-align: center"><img src="/blog-data-science/images/kmeans_iterations.png"  width="70%"></div>
+<div style="text-align: center"><img src="/images/kmeans_iterations.png"  width="70%"></div>
 
 The larger circle represents the initial position, and subsequent smaller circles are the intermediate positions until convergence.

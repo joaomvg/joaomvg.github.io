@@ -18,7 +18,7 @@ where $H_0$ is the null hypothesis and $H_1$ is the alternative hypothesis.
 
 We can model the t-statistics of both hypothesis using the Student's t-distribution. 
 
-<div style="text-align: center"><img src="/blog-data-science/images/powertest.png"  width="80%"></div>
+<div style="text-align: center"><img src="/images/powertest.png"  width="80%"></div>
 
 On the right is the distribution for the $H_1$ hypothesis while on the left we have the $H_0$ or null hypothesis. The area in red is the probability of rejecting the null hypothesis given that $H_0$ is true. This is the significance level that is usually is set to 5%. The area in blue is the probability of rejecting the null given that $H_1$ is true. If the distributions are far apart then the power approaches 1, while if they are close to each other the power is small. 
 

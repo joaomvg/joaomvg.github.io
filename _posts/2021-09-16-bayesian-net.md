@@ -16,10 +16,10 @@ $$P(C,A,B)=P(C|A,B)P(A)P(B)$$
 
 This can be represented with the graph:
 
-<div style="text-align: center"><img src="/blog-data-science/images/bn_dag.png"  width="40%"></div>
+<div style="text-align: center"><img src="/images/bn_dag.png"  width="40%"></div>
 
 Since A and B are independent variables, there is no arrow in between them. On the other hand, if we introduce an arrow in between A and B,
-<div style="text-align: center"><img src="/blog-data-science/images/bn_dag_2.png"  width="40%"></div>
+<div style="text-align: center"><img src="/images/bn_dag_2.png"  width="40%"></div>
 
 then the probabilistic model becomes
 
@@ -53,7 +53,7 @@ $$\begin{equation}\begin{split}&P(a=1)=0.2, \\
 &P(c=1,a=0,b=0)=0.6\end{split}\end{equation}$$
 
 and generate a dataset by random sampling:
-<div style="text-align: center"><img src="/blog-data-science/images/bn_data.png"  width="30%"></div>
+<div style="text-align: center"><img src="/images/bn_data.png"  width="30%"></div>
 
 Now we can re-determine the various parameteres using maximum likelihood estimation. For each sample we calculate the corresponding probability and its logarithm. The total log-likelihood is the sum over all samples. That is,
 
@@ -180,6 +180,6 @@ import bnlearn as bn
 model = bn.structure_learning.fit(data)
 G = bn.plot(model)
  ```
-<div style="text-align: center"><img src="/blog-data-science/images/bnlearn_fit.png"  width="75%"></div>
+<div style="text-align: center"><img src="/images/bnlearn_fit.png"  width="75%"></div>
 
 which is precisely the model that we have designed.

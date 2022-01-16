@@ -4,7 +4,7 @@ title: "Receiver Operating Curve"
 date: 2022-01-10
 category: Machine Learning
 image: roc_curve.png
-excerpt: I explain ROC curve.
+excerpt: The receiver operating curve, or ROC in short, is a metric that measures how well a model discriminates the labels. It is a metric particularly well suited for unbalanced datasets. Furthermore we can use the ROC curve to determine the optimal threshold for the Bayes predictor.
 katex: True
 ---
 

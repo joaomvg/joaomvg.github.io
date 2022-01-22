@@ -8,12 +8,12 @@ excerpt: Cross validation is a data training process whereby multiple traininig-
 katex: True
 ---
 
-- [** 1. Cross-validation **](#cv)
-- [** 2. K-fold](#kfold)
-- [** 2. Stratified **](#strata)
+- [**1. Fold Generation**](#cv)
+- [**2. K-fold**](#kfold)
+- [**3. Stratified**](#strata)
 
 <a name="cv"></a>
-### **Cross-Validation**
+### **Fold Generation**
 
 To build a machine learning model, we usually separate the dataset into training and validation sets. The training dataset is used for learning and the validation set for hyperparameter tuning. If enough data is available, we might consider a test set that we use to estimate the error. This is the desired approach. However, it requires considerable data for training,  validation, and testing. 
 

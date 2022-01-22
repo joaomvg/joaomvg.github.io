@@ -4,10 +4,9 @@ title: "Cross Validation"
 date: 2021-11-01
 category: Machine Learning
 image: 
-excerpt: Cross validation
+excerpt: Cross validation is a data training process whereby multiple traininig-validation folds are generated. This results in several sample estimates of the metric of interest.
 katex: True
 ---
-
 
 - [** 1. Cross-validation **](#cv)
 - [** 2. K-fold](#kfold)
@@ -129,8 +128,34 @@ for n in ns:
 
 <div style="text-align: center"><img src="/images/cv_folds.png"  width="80%"></div>
 
-We see the performance of the model deteriorating with increasing number of folds. This so because the traning folds have increasing number of datapoints in common, which favours overfiting. At the same time, the folds become smaller which increases variance of the error. We see in the above plot that the standard deviation is increasing.
+We see the model's performance deteriorating with an increasing number of folds. This is because the training folds have an increasing number of datapoints in common, favoring overfitting. At the same time, the folds become smaller, which increases the variance of the error. We see in the above plot that the standard deviation is increasing.
 
 <a name="strata"></a>
 ### **Stratified**
-cvcv
+
+In stratified cross-validation, each fold preserves the proportions between classes. If the dataset is unbalanced, a fold in K-fold cross validation can miss an entire class. First we create folds $f_{1i}$, with labels $y=1$, and $f_{0i}$ with labels $y=0$.
+
+<div style="text-align: center"><img src="/images/cv_stratified.png"  width="60%"></div>
+
+Each fold $F_i$ is built by joining the sets $f_{1i}$ with $f_{0i}$:
+
+<div style="text-align: center"><img src="/images/cv_stratified_2.png"  width="60%"></div>
+
+```python
+class KStratified:
+    def __init__(self,cv) -> None:
+        self.cv=cv
+
+    def folds(self,data):
+        df=data.sample(frac=1)
+        idx_1 = data['target']==1
+        cv=KFold(self.cv)
+        df1=df[idx_1]
+        df0=df[~idx_1]
+        for f1, f0 in zip(cv.folds(df1),cv.folds(df0)):
+            f1a,f1b=f1 
+            f0a,f0b=f0
+            dfa=pd.concat([f1a,f0a],axis=0)
+            dfb=pd.concat([f1b,f0b],axis=0)
+            yield dfa, dfb
+```
